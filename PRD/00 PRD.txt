@@ -1,0 +1,341 @@
+# PRD: Super Simple Stack
+
+## 1. Final Stack Decision
+
+Use:
+
+```txt
+Vite + React + JavaScript
+PocketBase
+Tiptap WYSIWYG editor
+GLightbox gallery viewer
+Plain CSS
+```
+
+Do **not** use GitHub CMS, Decap CMS, Payload, Better Auth, Sanity, Strapi, Firebase, Supabase, or custom JWE auth.
+
+## 2. Frontend
+
+```txt
+Vite
+React
+JavaScript
+Plain CSS
+```
+
+Purpose:
+
+```txt
+Public website
+/admin dashboard
+Blog pages
+Gallery pages
+```
+
+Vite is suitable because it builds a production bundle that can be served as static frontend assets. ([vitejs][1])
+
+## 3. Backend
+
+```txt
+PocketBase
+```
+
+PocketBase should handle:
+
+```txt
+Admin authentication
+SQLite database
+Blog post records
+Gallery image records
+Image uploads
+REST API
+Admin-only CRUD rules
+```
+
+PocketBase is a single-file backend with SQLite, authentication, file storage, REST API, and an admin dashboard. ([PocketBase][2])
+
+## 4. Authentication
+
+Use:
+
+```txt
+PocketBase auth
+```
+
+Create one auth collection:
+
+```txt
+admins
+```
+
+Admin login fields:
+
+```txt
+email
+password
+```
+
+Rules:
+
+```txt
+Only logged-in admins can create, edit, publish, unpublish, or delete blog posts.
+Only logged-in admins can create, edit, publish, unpublish, or delete gallery images.
+Public visitors can only read published blog posts and published gallery images.
+```
+
+Do **not** use browser-only JWE. It is unnecessary here because PocketBase already provides authentication and protected API rules.
+
+## 5. Admin Area
+
+Admin route:
+
+```txt
+/admin
+```
+
+Admin pages:
+
+```txt
+/admin/login
+/admin/blog
+/admin/blog/new
+/admin/blog/:id/edit
+/admin/gallery
+/admin/gallery/new
+/admin/gallery/:id/edit
+```
+
+Admin must include:
+
+```txt
+Login
+Logout
+Blog list
+Create blog post
+Edit blog post
+Delete blog post
+Publish/unpublish blog post
+Gallery list
+Upload gallery image
+Edit gallery image
+Delete gallery image
+Publish/unpublish gallery image
+```
+
+## 6. Blog Editing
+
+Use:
+
+```txt
+Tiptap
+```
+
+Tiptap is a framework-agnostic rich-text editor and works with vanilla JavaScript/Vite-style projects. ([Tiptap][3])
+
+Blog fields:
+
+```txt
+title
+slug
+excerpt
+cover_image
+content_html
+content_json
+published
+published_at
+created
+updated
+```
+
+Admin blog actions:
+
+```txt
+Add post
+Edit post
+Save draft
+Publish
+Unpublish
+Delete
+Upload/change cover image
+Edit content in WYSIWYG
+```
+
+## 7. Gallery Editing
+
+Gallery fields:
+
+```txt
+title
+image
+alt_text
+caption
+sort_order
+published
+created
+updated
+```
+
+Admin gallery actions:
+
+```txt
+Add image
+Upload image
+Edit title
+Edit alt text
+Edit caption
+Change order
+Publish
+Unpublish
+Delete
+```
+
+PocketBase supports file fields and file uploads through its SDK/API. ([PocketBase][4])
+
+## 8. Public Website
+
+Public pages:
+
+```txt
+/
+ /blog
+ /blog/:slug
+ /gallery
+```
+
+Homepage sections:
+
+```txt
+Hero
+About
+Menu / Services
+Gallery preview
+Blog preview
+Contact CTA
+```
+
+Public blog behavior:
+
+```txt
+Show only posts where published = true
+Sort newest first
+Render content_html
+```
+
+Public gallery behavior:
+
+```txt
+Show only images where published = true
+Sort by sort_order
+Open images with GLightbox
+```
+
+## 9. Gallery Display
+
+Use:
+
+```txt
+GLightbox
+```
+
+Purpose:
+
+```txt
+Simple image grid
+Click image to open lightbox
+Show title/caption
+Mobile-friendly viewing
+```
+
+## 10. Packages
+
+Install:
+
+```bash
+npm create vite@latest website -- --template react
+cd website
+
+npm i pocketbase
+npm i @tiptap/react @tiptap/starter-kit
+npm i glightbox
+```
+
+Optional:
+
+```bash
+npm i lucide-react
+```
+
+## 11. Data Model
+
+### PocketBase Collection: `posts`
+
+```txt
+title: text
+slug: text
+excerpt: text
+cover_image: file
+content_html: editor/text
+content_json: json
+published: boolean
+published_at: date
+```
+
+### PocketBase Collection: `gallery_images`
+
+```txt
+title: text
+image: file
+alt_text: text
+caption: text
+sort_order: number
+published: boolean
+```
+
+### PocketBase Collection: `admins`
+
+```txt
+email/password auth collection
+```
+
+## 12. Deployment
+
+Deploy two things:
+
+```txt
+1. Vite frontend
+2. PocketBase backend
+```
+
+Frontend can be hosted on:
+
+```txt
+Netlify
+Vercel
+Cloudflare Pages
+Static hosting
+```
+
+PocketBase must be hosted somewhere with persistent storage.
+
+## 13. Final Decision
+
+Use this stack:
+
+```txt
+Vite React frontend
+Custom /admin dashboard
+PocketBase backend
+PocketBase auth
+PocketBase SQLite database
+PocketBase file uploads
+Tiptap WYSIWYG blog editor
+GLightbox public gallery
+Plain CSS
+```
+
+This is the simplest stack that still gives her real admin editing, login, blog management, gallery management, image upload, publish/unpublish, and delete functionality.
+
+[1]: https://vite.dev/guide/build?utm_source=chatgpt.com "Building for Production"
+[2]: https://pocketbase.io/?utm_source=chatgpt.com "PocketBase - Open Source backend in 1 file"
+[3]: https://tiptap.dev/docs/editor/getting-started/install/vanilla-javascript?utm_source=chatgpt.com "Vanilla JavaScript | Tiptap Editor Docs"
+[4]: https://pocketbase.io/docs/files-handling/?utm_source=chatgpt.com "Introduction - Files upload and handling - Docs"

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 260" role="img" aria-labelledby="title desc">
+  <title id="title">Moniké velké logo</title>
+  <desc id="desc">Zlatý symbol inspirovaný křídly bohyně Niké a nápis Moniké.</desc>
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#F3DCA1"/>
+      <stop offset="0.48" stop-color="#D6B76A"/>
+      <stop offset="1" stop-color="#8A6424"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(22 18) scale(.78)" fill="none" stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M56 128c-22-4-37-19-43-44 26 16 48 23 72 18" stroke-width="4"/>
+    <path d="M28 84c20 17 39 26 66 29" stroke-width="2"/>
+    <path d="M19 101c21 12 43 18 70 17" stroke-width="2"/>
+    <path d="M106 143c35-15 58-43 72-84" stroke-width="3"/>
+    <path d="M151 78c17-8 31-19 43-35" stroke-width="2"/>
+    <path d="M154 101c20-4 36-12 49-25" stroke-width="2"/>
+    <path d="M143 126c18 1 33-3 47-12" stroke-width="2"/>
+    <path d="M95 153c15 17 34 27 58 31" stroke-width="3"/>
+    <path d="M83 38v116M137 38v116M83 38l54 116M137 38l-54 116" stroke-width="5"/>
+    <g fill="url(#gold)" stroke="none" font-family="Georgia, 'Times New Roman', serif" font-size="86" letter-spacing="-10">
+      <text x="59" y="120">M</text>
+      <text x="106" y="146">K</text>
+    </g>
+  </g>
+  <text x="210" y="132" fill="url(#gold)" font-family="Georgia, 'Times New Roman', serif" font-size="82" letter-spacing="18">Moniké</text>
+  <path d="M220 166h330" stroke="url(#gold)" stroke-width="1.5" opacity=".7"/>
+  <text x="228" y="205" fill="#D6B76A" font-family="Georgia, 'Times New Roman', serif" font-size="22" letter-spacing="7">Tvořím. Cestuji. Žiju.</text>
+</svg>

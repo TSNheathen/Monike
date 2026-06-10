@@ -1,0 +1,375 @@
+# PRD Addendum: Landing Page Must Be Built from Separate Layers
+
+## 1. Core Requirement
+
+The landing page must **not** be created as one single flattened image containing the background, logo, menu, text, buttons, cards, and social icons.
+
+The final landing page must be built from **separate visual layers and real HTML elements**.
+
+The AI-generated image should only be used as a **visual reference**, not as the final website structure.
+
+## 2. Required Layer Structure
+
+The landing page must be composed from these separate parts:
+
+```txt id="s83daj"
+Layer 1: Base black background color
+Layer 2: Main background artwork image
+Layer 3: Dark readability overlay / gradients
+Layer 4: Transparent Moniké logo asset
+Layer 5: Left navigation as HTML text links
+Layer 6: Center hero content as HTML text
+Layer 7: CTA button as real HTML button/link
+Layer 8: Bottom decorative/panel image layer
+Layer 9: Five category cards as real clickable HTML links
+Layer 10: Social icons as separate SVG/icon links
+Layer 11: Optional signature/decorative text as separate asset or HTML
+```
+
+## 3. Image Generation Requirement
+
+When generating or preparing visual assets, do **not** generate one complete picture of the whole website.
+
+Generate/export separate image assets instead.
+
+Required image assets:
+
+```txt id="3xrjvq"
+background-desktop.jpg
+background-mobile.jpg
+bottom-panel.png
+logo-monike.svg or logo-monike.png
+card-galerie.jpg
+card-cesty-pribehy.jpg
+card-vzpominky.jpg
+card-kocicky-andy.jpg
+card-proces-tvorby.jpg
+signature-monike.png or signature-monike.svg, optional
+```
+
+## 4. Main Background Artwork
+
+The main background artwork should include only the atmospheric visual scene.
+
+It may include:
+
+```txt id="39bccz"
+dark fantasy / artistic background
+main portrait or figure
+nature, travel, memories, animals, artistic atmosphere
+dark cinematic mood
+black and gold color direction
+```
+
+It must **not** include:
+
+```txt id="7bq6ba"
+Moniké logo
+navigation menu
+hero text
+CTA button
+bottom category cards
+social media icons
+red annotation boxes
+fake UI elements
+fake website text
+```
+
+The background should have empty/darker space for HTML overlays:
+
+```txt id="3xu6tv"
+top-left area reserved for logo
+left side reserved for navigation
+center-lower area reserved for hero CTA
+bottom area reserved for category cards
+bottom-left area reserved for social icons
+```
+
+## 5. Bottom Panel Image Layer
+
+The bottom panel should be a separate decorative image or CSS background layer.
+
+Purpose:
+
+```txt id="v1uad8"
+Create a darker visual base behind the bottom category cards.
+Add texture/depth.
+Help the cards sit visually inside the composition.
+```
+
+The bottom panel must **not** contain the card text or clickable areas baked into the image.
+
+Allowed:
+
+```txt id="11ea3u"
+dark paper texture
+subtle gold scratches
+soft vignette
+decorative shadows
+```
+
+Not allowed:
+
+```txt id="00upr0"
+card titles baked into the image
+card descriptions baked into the image
+social icons baked into the image
+CTA baked into the image
+```
+
+## 6. Logo Layer
+
+The Moniké logo must be a separate transparent asset or real HTML text.
+
+Required:
+
+```txt id="x9ted1"
+Brand name: Moniké
+Transparent background
+Gold color
+No box/container baked into the image
+```
+
+Preferred files:
+
+```txt id="11rs0g"
+logo-monike.svg
+logo-monike.png
+```
+
+The logo must be positioned by CSS, not included in the background image.
+
+## 7. Navigation Layer
+
+The navigation must be real HTML text links.
+
+Menu items:
+
+```txt id="do177w"
+DOMŮ
+GALERIE
+CESTY & PŘÍBĚHY
+O MNĚ
+KOČIČKY & ANDY
+KONTAKT
+```
+
+Requirements:
+
+```txt id="2qmghc"
+Do not generate navigation as part of any image.
+Do not bake menu text into the background.
+Use real links for accessibility and SEO.
+Use CSS for hover/focus effects.
+```
+
+## 8. Hero Content Layer
+
+The hero content must be real HTML text.
+
+Hero content:
+
+```txt id="ql39bn"
+Moniké
+Tvořím. Cestuji. Žiju.
+
+Umění je můj jazyk.
+Cestování moje inspirace.
+Okamžiky moje vzpomínky.
+Tady sdílím vše, co tvoří můj svět.
+
+VSTOUPIT DO MÉHO SVĚTA
+```
+
+Requirements:
+
+```txt id="jw1p93"
+Do not bake hero text into the background image.
+Do not generate fake text in the artwork.
+Use CSS for typography, spacing, and contrast.
+Use dark overlay/shadow behind text when needed.
+```
+
+## 9. CTA Button Layer
+
+The CTA must be a real HTML link/button.
+
+CTA:
+
+```txt id="c7xqio"
+Text: VSTOUPIT DO MÉHO SVĚTA
+Target: /gallery
+```
+
+Requirements:
+
+```txt id="icyvji"
+Must be keyboard accessible.
+Must have hover state.
+Must have focus-visible state.
+Must not be baked into any image.
+```
+
+## 10. Bottom Category Cards Layer
+
+The five bottom cards must be real clickable HTML links.
+
+Each card uses:
+
+```txt id="ni3z4z"
+separate card background image
+real HTML title
+real HTML description
+real link target
+CSS overlay for readability
+```
+
+Cards:
+
+```txt id="k4ru96"
+GALERIE
+CESTY & PŘÍBĚHY
+VZPOMÍNKY
+KOČIČKY & ANDY
+PROCES TVORBY
+```
+
+Required card image files:
+
+```txt id="i1a3o4"
+card-galerie.jpg
+card-cesty-pribehy.jpg
+card-vzpominky.jpg
+card-kocicky-andy.jpg
+card-proces-tvorby.jpg
+```
+
+Card images must **not** contain the title or description text baked into the image.
+
+Card text must be rendered with HTML/CSS to ensure:
+
+```txt id="f7ynue"
+accessibility
+translation/editing flexibility
+proper contrast
+responsive layout
+SEO-friendly structure
+```
+
+## 11. Social Links Layer
+
+Social icons must be separate SVG/icon links.
+
+Required social links:
+
+```txt id="pesccd"
+Instagram
+Facebook
+```
+
+Requirements:
+
+```txt id="12jxol"
+Do not bake social icons into the background.
+Use separate SVG icons or icon components.
+Add aria-label values.
+Use gold color with accessible contrast.
+```
+
+## 12. Optional Signature Layer
+
+The decorative signature may be either:
+
+```txt id="xgfu51"
+separate transparent PNG/SVG asset
+real HTML text
+```
+
+It must not be part of the main background image.
+
+Suggested text:
+
+```txt id="chunh1"
+Moniké
+```
+
+or:
+
+```txt id="i4q436"
+Collect moments, not things ♡
+```
+
+## 13. Correct Asset Generation Prompts
+
+Use prompts like this when generating assets.
+
+### Main Background Prompt
+
+```txt id="0x0d2y"
+Create only the dark cinematic background artwork for a black-and-gold mystical personal portfolio website. Leave empty dark space on the top-left for a logo, left side for navigation, center-lower area for hero text, and bottom area for clickable cards. Do not include any text, logo, buttons, navigation, social icons, UI boxes, or website elements. No typography. No red annotations.
+```
+
+### Bottom Panel Prompt
+
+```txt id="f9feyl"
+Create only a dark decorative bottom panel texture for a black-and-gold mystical website. It should look like a shadowed artistic base for cards, with subtle paper texture and gold details. Do not include text, buttons, card labels, social icons, or UI elements.
+```
+
+### Card Image Prompt
+
+```txt id="5qyeao"
+Create only a dark cinematic card background image for the category [CATEGORY NAME]. No text, no logo, no button, no border, no UI elements. Leave the center/bottom area dark enough for gold HTML text overlay.
+```
+
+### Logo Prompt
+
+```txt id="w175zd"
+Create a transparent logo asset for the brand Moniké in elegant gold lettering. Transparent background. No website mockup. No box. No background image.
+```
+
+## 14. Incorrect Asset Generation
+
+Do not generate prompts like:
+
+```txt id="r19mbs"
+Create a complete website screenshot.
+Create the entire landing page as one image.
+Create the homepage including logo, navigation, text, buttons, cards, and icons.
+Create a poster with all website elements included.
+```
+
+These produce a flattened mockup and are not acceptable for implementation.
+
+## 15. Implementation Acceptance Criteria
+
+The landing page implementation is accepted only if:
+
+```txt id="9gnwqd"
+The background image does not contain UI text.
+The logo is a separate asset or HTML element.
+The navigation is real HTML.
+The hero text is real HTML.
+The CTA is a real clickable link/button.
+The five cards are real clickable HTML links.
+Each card image is separate from the card text.
+Social links are separate clickable icons.
+The layout can be adjusted with CSS without regenerating the full image.
+The design remains responsive.
+Text remains accessible and readable.
+```
+
+## 16. Final Rule
+
+The AI-generated concept is a **visual direction**, not the final asset.
+
+The website must be assembled like this:
+
+```txt id="3bski5"
+artwork assets + HTML elements + CSS positioning + accessible interactions
+```
+
+Not like this:
+
+```txt id="pvnzf5"
+one full-page image with fake website elements inside it
+```

@@ -1,0 +1,767 @@
+Updated PRD below. WCAG 2.2 AA contrast targets used here: normal text minimum **4.5:1**, large text minimum **3:1**. ([W3C][1])
+
+# PRD: Landing Page Visual Design — Moniké
+
+## 1. Purpose
+
+Create a dark, cinematic landing page for the brand **Moniké**.
+
+The page should visually follow the provided AI-generated concept: layered dark fantasy artwork, transparent logo, left-side navigation, central hero CTA, bottom visual category cards, and social links.
+
+The final page must be implemented with real HTML/CSS layers, not as one flat image.
+
+## 2. Brand Direction
+
+Brand name:
+
+```txt
+Moniké
+```
+
+Visual tone:
+
+```txt
+dark
+black
+gold
+mystical
+artistic
+cinematic
+elegant
+personal
+dreamlike
+```
+
+Primary visual impression:
+
+```txt
+A black-and-gold artistic world with travel, memories, animals, creativity, and personal storytelling.
+```
+
+## 3. Core Layout
+
+Route:
+
+```txt
+/
+```
+
+The landing page should include:
+
+```txt
+Full-screen background image
+Transparent Moniké logo
+Left-side transparent navigation
+Central hero text block
+Central CTA button
+Bottom five category cards
+Bottom-left social icons
+Optional handwritten/signature decoration
+```
+
+The layout should feel like one composed poster, but every interactive/text element must be real HTML.
+
+## 4. Color System
+
+Use black as the dominant base.
+
+Required color tokens:
+
+```css
+:root {
+  --color-black: #050505;
+  --color-black-soft: #0A0A0A;
+  --color-panel: rgba(5, 5, 5, 0.72);
+
+  --color-gold-text: #D6B76A;
+  --color-gold-bright: #E8D59A;
+  --color-gold-muted: #B88A36;
+  --color-gold-dark: #8A6424;
+
+  --color-white-soft: #F4EEDC;
+  --color-border-gold: rgba(214, 183, 106, 0.48);
+  --color-focus: #E8D59A;
+}
+```
+
+## 5. Contrast Requirements
+
+The design must target WCAG AA readability.
+
+Minimum contrast rules:
+
+```txt
+Normal text: minimum 4.5:1 contrast ratio
+Large text: minimum 3:1 contrast ratio
+Interactive borders/focus indicators: minimum 3:1 contrast ratio
+```
+
+Rules for gold on black:
+
+```txt
+Use #D6B76A or #E8D59A for normal readable text.
+Use #B88A36 only for large decorative text, borders, dividers, and hover accents.
+Do not use #8A6424 for small text.
+Do not place gold text directly over busy image areas without a dark overlay.
+```
+
+All text placed over images must have one of:
+
+```txt
+dark gradient behind it
+dark radial overlay behind it
+text-shadow plus darkened background area
+semi-transparent black panel
+```
+
+Preferred overlay:
+
+```css
+background: linear-gradient(
+  90deg,
+  rgba(0, 0, 0, 0.82),
+  rgba(0, 0, 0, 0.42),
+  rgba(0, 0, 0, 0.72)
+);
+```
+
+## 6. Background Image
+
+Use one main full-page background image.
+
+Required assets:
+
+```txt
+background-desktop.jpg
+background-mobile.jpg
+```
+
+Background behavior:
+
+```css
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
+```
+
+Desktop:
+
+```txt
+The main figure / visual focus should sit center-right.
+The left side must remain dark enough for navigation.
+The bottom must remain dark enough for cards and social links.
+```
+
+Mobile:
+
+```txt
+Use a separate mobile crop.
+Keep the main subject visible.
+Keep the hero text readable.
+Avoid hiding the CTA below the fold.
+```
+
+## 7. Page Structure
+
+Recommended component structure:
+
+```txt
+LandingPage
+  BackgroundLayer
+  VisualOverlay
+  Logo
+  SideNavigation
+  HeroBlock
+  BottomCategoryCards
+  SocialLinks
+```
+
+The root wrapper:
+
+```css
+.landing-page {
+  min-height: 100svh;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-black);
+}
+```
+
+## 8. Logo
+
+The logo must show the brand name:
+
+```txt
+Moniké
+```
+
+Logo options:
+
+```txt
+Preferred: transparent SVG or PNG
+Fallback: styled HTML text logo
+```
+
+Logo placement desktop:
+
+```css
+position: absolute;
+top: 32px;
+left: 48px;
+width: 170px;
+z-index: 20;
+```
+
+Logo placement mobile:
+
+```css
+top: 20px;
+left: 24px;
+width: 120px;
+```
+
+Logo rules:
+
+```txt
+No visible background box.
+No red annotation box.
+No heavy container.
+No white rectangle.
+No default browser image border.
+```
+
+If implemented as text:
+
+```css
+.logo-text {
+  color: var(--color-gold-bright);
+  font-family: serif;
+  font-size: clamp(2rem, 4vw, 4.5rem);
+  letter-spacing: 0.08em;
+}
+```
+
+## 9. Left Navigation
+
+Desktop navigation should appear on the left side below the logo.
+
+Menu items:
+
+```txt
+DOMŮ
+GALERIE
+CESTY & PŘÍBĚHY
+O MNĚ
+KOČIČKY & ANDY
+KONTAKT
+```
+
+Navigation style:
+
+```txt
+transparent background
+no card container
+uppercase text
+gold readable color
+wide letter spacing
+subtle hover animation
+```
+
+Desktop placement:
+
+```css
+.side-nav {
+  position: absolute;
+  top: 260px;
+  left: 56px;
+  z-index: 20;
+}
+```
+
+Navigation link style:
+
+```css
+.side-nav a {
+  color: var(--color-gold-text);
+  text-decoration: none;
+  letter-spacing: 0.18em;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+```
+
+Hover state:
+
+```css
+.side-nav a:hover {
+  color: var(--color-gold-bright);
+}
+```
+
+Hover indicator:
+
+```txt
+A thin gold line should expand beside or under the active/hovered menu item.
+```
+
+Mobile behavior:
+
+```txt
+Use a simple hamburger button.
+Open a dark full-height or partial overlay menu.
+Keep menu text gold on black.
+Ensure all links remain keyboard accessible.
+```
+
+## 10. Hero Block
+
+Hero block content:
+
+```txt
+Moniké
+Tvořím. Cestuji. Žiju.
+
+Umění je můj jazyk.
+Cestování moje inspirace.
+Okamžiky moje vzpomínky.
+Tady sdílím vše, co tvoří můj svět.
+
+VSTOUPIT DO MÉHO SVĚTA
+```
+
+Hero placement desktop:
+
+```css
+.hero-block {
+  position: absolute;
+  left: 50%;
+  bottom: 28%;
+  transform: translateX(-50%);
+  z-index: 20;
+  text-align: center;
+  max-width: 560px;
+}
+```
+
+Hero text rules:
+
+```txt
+Text must be HTML.
+Do not bake hero text into the background image.
+Use gold/soft white with strong contrast.
+Use a dark transparent panel or radial shadow if the image behind is busy.
+```
+
+Hero title:
+
+```css
+.hero-title {
+  color: var(--color-gold-bright);
+  font-family: serif;
+  text-transform: none;
+  letter-spacing: 0.12em;
+  font-size: clamp(2rem, 4vw, 4.5rem);
+}
+```
+
+Hero subtitle:
+
+```css
+.hero-subtitle {
+  color: var(--color-gold-text);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+}
+```
+
+Hero body:
+
+```css
+.hero-body {
+  color: var(--color-white-soft);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+```
+
+## 11. CTA Button
+
+CTA text:
+
+```txt
+VSTOUPIT DO MÉHO SVĚTA
+```
+
+CTA target:
+
+```txt
+/gallery
+```
+
+Button style:
+
+```css
+.hero-cta {
+  color: var(--color-gold-bright);
+  border: 1px solid var(--color-border-gold);
+  background: rgba(5, 5, 5, 0.58);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+```
+
+Hover/focus state:
+
+```css
+.hero-cta:hover,
+.hero-cta:focus-visible {
+  color: var(--color-black);
+  background: var(--color-gold-bright);
+  border-color: var(--color-gold-bright);
+}
+```
+
+Accessibility:
+
+```txt
+Focus state must be clearly visible.
+Button must be usable with keyboard.
+Button text must not rely only on decorative styling.
+```
+
+## 12. Bottom Category Cards
+
+Place five clickable cards at the bottom of the landing page.
+
+Cards:
+
+```txt
+GALERIE
+CESTY & PŘÍBĚHY
+VZPOMÍNKY
+KOČIČKY & ANDY
+PROCES TVORBY
+```
+
+Card data:
+
+```txt
+GALERIE
+Description: Obrazy, kresby, portréty, ilustrace a další tvorba
+Target: /gallery
+
+CESTY & PŘÍBĚHY
+Description: Zážitky, příběhy a fotografie z celého světa
+Target: /blog?category=cesty
+
+VZPOMÍNKY
+Description: Nezapomenutelné okamžiky, které si nesu srdcem
+Target: /blog?category=vzpominky
+
+KOČIČKY & ANDY
+Description: Moje chlupaté parťačky a můj papoušek Andy
+Target: /blog?category=kocicky-andy
+
+PROCES TVORBY
+Description: Jak vznikají má díla, inspirace, myšlenky a zákulisí tvorby
+Target: /blog?category=proces-tvorby
+```
+
+Desktop layout:
+
+```css
+.category-cards {
+  position: absolute;
+  left: 50%;
+  bottom: 72px;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: min(1120px, calc(100vw - 80px));
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+```
+
+Card style:
+
+```css
+.category-card {
+  position: relative;
+  min-height: 190px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-gold);
+  background: var(--color-black-soft);
+}
+```
+
+Card image:
+
+```txt
+Each card should have a background image.
+Each image must have a dark overlay to preserve text contrast.
+```
+
+Card text:
+
+```css
+.category-card-title {
+  color: var(--color-gold-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.category-card-description {
+  color: var(--color-white-soft);
+}
+```
+
+Card hover:
+
+```txt
+Image slightly zooms.
+Border becomes brighter.
+Title becomes brighter gold.
+Overlay becomes slightly less dark but text remains readable.
+```
+
+Mobile behavior:
+
+```txt
+Use horizontal scrolling cards with scroll snap.
+Do not squeeze five cards into tiny columns.
+Cards must be touch-friendly.
+```
+
+## 13. Social Links
+
+Social icons:
+
+```txt
+Instagram
+Facebook
+```
+
+Placement desktop:
+
+```css
+.social-links {
+  position: absolute;
+  left: 48px;
+  bottom: 32px;
+  z-index: 20;
+}
+```
+
+Style:
+
+```txt
+Circular icon buttons.
+Transparent black background.
+Gold border.
+Gold icon.
+Clear hover/focus state.
+```
+
+Icon contrast:
+
+```txt
+Use #D6B76A or #E8D59A for icons.
+Do not use muted dark gold for small icons.
+```
+
+## 14. Bottom Signature / Decorative Text
+
+Optional decorative text:
+
+```txt
+Collect moments, not things ♡
+```
+
+Optional signature:
+
+```txt
+Moniké
+```
+
+Rules:
+
+```txt
+Decorative text can use muted gold.
+If it conveys important information, it must meet text contrast rules.
+Decorative text should not interfere with cards or CTA.
+```
+
+## 15. Typography
+
+Recommended font roles:
+
+```txt
+Logo: elegant serif or custom brand SVG
+Hero title: serif
+Hero subtitle: script-style font if available
+Navigation: clean uppercase serif or sans-serif
+Body text: readable serif or sans-serif
+```
+
+Implementation rule:
+
+```txt
+Use system fonts first.
+Do not block implementation on custom fonts.
+Custom fonts can be added later.
+```
+
+Suggested CSS:
+
+```css
+body {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.nav,
+.button,
+.category-card-title {
+  font-family: system-ui, sans-serif;
+}
+```
+
+## 16. Image Layering
+
+Required visual layers:
+
+```txt
+Layer 1: black background color fallback
+Layer 2: full-screen background image
+Layer 3: dark gradient overlay
+Layer 4: logo, menu, hero, cards, social links
+```
+
+Overlay requirement:
+
+```css
+.landing-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0,0,0,0.12), rgba(0,0,0,0.68) 72%),
+    linear-gradient(90deg, rgba(0,0,0,0.82), rgba(0,0,0,0.28), rgba(0,0,0,0.76));
+  z-index: 5;
+}
+```
+
+All content should sit above overlay:
+
+```css
+z-index: 20;
+```
+
+## 17. Responsive Requirements
+
+Desktop:
+
+```txt
+Logo top-left.
+Menu left side.
+Hero center-lower.
+Cards bottom row.
+Social icons bottom-left.
+```
+
+Tablet:
+
+```txt
+Logo smaller.
+Menu may remain left if enough width.
+Cards can become horizontal scroll.
+Hero moves slightly upward.
+```
+
+Mobile:
+
+```txt
+Logo top-left or top-center.
+Navigation becomes hamburger.
+Hero remains centered and readable.
+Cards become horizontal scroll.
+Social links remain visible but must not overlap cards.
+```
+
+Mobile minimum support:
+
+```txt
+360px width
+667px height
+```
+
+## 18. Accessibility Requirements
+
+Required:
+
+```txt
+All text must meet WCAG AA contrast.
+All clickable cards must be links.
+All links and buttons must have focus-visible styles.
+All images must have alt text unless decorative.
+Mobile menu button must use aria-expanded.
+No text should be image-only unless decorative.
+CTA must be keyboard accessible.
+Social links must have aria-label values.
+```
+
+Required labels:
+
+```txt
+Instagram link aria-label: Instagram Moniké
+Facebook link aria-label: Facebook Moniké
+Mobile menu button aria-label: Otevřít menu
+```
+
+Focus style:
+
+```css
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+```
+
+## 19. Do Not Implement
+
+Do not include:
+
+```txt
+Red annotation rectangles
+Visible layout guides
+Logo box background
+Menu box background
+Low-contrast dark gold text
+Text baked into the background image
+Large UI library
+Tailwind requirement
+Complex animations
+Video background
+```
+
+## 20. Acceptance Criteria
+
+Landing page is accepted when:
+
+```txt
+The brand name is Moniké.
+The page uses black as the dominant color.
+Readable text uses accessible gold or soft white.
+Logo appears transparent with no container.
+Left menu appears as transparent text links.
+Menu hover and focus states work.
+Hero block is centered and readable.
+CTA button is visible and keyboard accessible.
+Five bottom category cards are visible and clickable.
+Card text remains readable over images.
+Social links appear and are accessible.
+The page is responsive on desktop, tablet, and mobile.
+No red annotation boxes appear.
+All important text is real HTML, not baked into images.
+```
+
+[1]: https://www.w3.org/TR/WCAG22/?utm_source=chatgpt.com "Web Content Accessibility Guidelines (WCAG) 2.2"
