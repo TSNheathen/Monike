@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "pb:download": "powershell -ExecutionPolicy Bypass -File scripts/download-pocketbase.ps1",
+    "pb:serve": "powershell -ExecutionPolicy Bypass -File scripts/serve-pocketbase.ps1"
   },
   "dependencies": {
     "@tiptap/react": "^2.14.0",
