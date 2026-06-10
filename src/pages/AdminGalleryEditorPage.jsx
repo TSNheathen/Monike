@@ -13,8 +13,12 @@ export default function AdminGalleryEditorPage() {
     try {
       await api.createGalleryImage(formData)
       navigate('/admin/gallery')
-    } catch {
-      setMessage('Obrázek se nepodařilo uložit. Je PocketBase spuštěný?')
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) {
+        setMessage('Obrázek se nepodařilo uložit. Nejdřív se přihlas do administrace.')
+        return
+      }
+      setMessage('Obrázek se nepodařilo uložit. Zkontroluj, že PocketBase běží.')
     }
   }
 

@@ -24,8 +24,12 @@ export default function AdminBlogEditorPage() {
         published_at: form.published ? new Date().toISOString() : '',
       })
       navigate('/admin/blog')
-    } catch {
-      setMessage('Článek se nepodařilo uložit. Je PocketBase spuštěný?')
+    } catch (error) {
+      if (error?.status === 401 || error?.status === 403) {
+        setMessage('Článek se nepodařilo uložit. Nejdřív se přihlas do administrace.')
+        return
+      }
+      setMessage('Článek se nepodařilo uložit. Zkontroluj, že PocketBase běží.')
     }
   }
 

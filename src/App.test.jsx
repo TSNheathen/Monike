@@ -51,13 +51,10 @@ describe('Moniké aplikace', () => {
     expect(screen.getByRole('dialog', { name: 'Mobilní navigace' })).toBeInTheDocument()
   })
 
-  it('má veřejné a administrační routy v češtině', async () => {
-    renderRoute('/admin/blog')
+  it('chrání administraci a nabízí přihlášení v češtině', async () => {
+    renderRoute('/admin/blog/new')
 
-    expect(await screen.findByRole('heading', { name: 'Správa blogu' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Nový článek' })).toHaveAttribute(
-      'href',
-      '/admin/blog/new',
-    )
+    expect(await screen.findByRole('heading', { name: 'Přihlášení' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Přihlásit' })).toBeInTheDocument()
   })
 })

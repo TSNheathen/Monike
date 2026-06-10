@@ -60,6 +60,8 @@ Potom se v aplikaci přihlas přes:
 http://127.0.0.1:5173/admin/login
 ```
 
+Bez přihlášení tě administrační stránky přesměrují na login. To je správné chování, protože pravidla PocketBase dovolují ukládání článků a galerie jen přihlášeným záznamům z kolekce `admins`.
+
 ## Konfigurace URL backendu
 
 Výchozí hodnota:
