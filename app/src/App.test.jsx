@@ -3,6 +3,35 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import App from './App.jsx'
 
+vi.mock('./data/public-content.js', () => ({
+  loadLandingContent: async () => ({
+    site: {
+      hero_subtitle: 'Tvořím. Cestuji. Žiju.',
+      hero_body: 'Umění je můj jazyk.\nCestování moje inspirace.',
+      hero_cta_label: 'VSTOUPIT DO MÉHO SVĚTA',
+      signature_text: 'Collect moments, not things',
+      instagram_url: 'https://www.instagram.com/',
+      facebook_url: 'https://www.facebook.com/',
+    },
+    cards: [
+      ['gallery', 'GALERIE', '/gallery'],
+      ['cesty', 'CESTY & PŘÍBĚHY', '/blog?category=cesty'],
+      ['vzpominky', 'VZPOMÍNKY', '/blog?category=vzpominky'],
+      ['kocicky-andy', 'KOČIČKY & ANDY', '/blog?category=kocicky-andy'],
+      ['proces-tvorby', 'PROCES TVORBY', '/blog?category=proces-tvorby'],
+    ].map(([slot, title, href]) => ({
+      id: slot,
+      slot,
+      title,
+      href,
+      description: 'Testovací popis',
+      image: '/assets/landing/card-galerie.png',
+      image_width: 1024,
+      image_height: 1536,
+    })),
+  }),
+}))
+
 function renderRoute(initialEntry = '/') {
   return render(
     <MemoryRouter initialEntries={[initialEntry]}>
@@ -12,10 +41,10 @@ function renderRoute(initialEntry = '/') {
 }
 
 describe('Moniké aplikace', () => {
-  it('vykreslí vrstvenou českou landing page bez zapečeného UI', () => {
+  it('vykreslí vrstvenou českou landing page bez zapečeného UI', async () => {
     renderRoute('/')
 
-    expect(screen.getByRole('heading', { name: 'Moniké' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Moniké' })).toBeInTheDocument()
     expect(screen.getByText('Tvořím. Cestuji. Žiju.')).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'VSTOUPIT DO MÉHO SVĚTA' }),
@@ -34,8 +63,8 @@ describe('Moniké aplikace', () => {
     expect(within(navigation).getByRole('link', { name: 'KONTAKT' })).toBeInTheDocument()
 
     expect(screen.getAllByTestId('category-card')).toHaveLength(5)
-    expect(screen.getByRole('link', { name: /Instagram Moniké/i })).toHaveAttribute('href', '#')
-    expect(screen.getByRole('link', { name: /Facebook Moniké/i })).toHaveAttribute('href', '#')
+    expect(screen.getByRole('link', { name: /Instagram Moniké/i })).toHaveAttribute('href', 'https://www.instagram.com/')
+    expect(screen.getByRole('link', { name: /Facebook Moniké/i })).toHaveAttribute('href', 'https://www.facebook.com/')
   })
 
   it('otevře mobilní menu s přístupným stavem aria-expanded', async () => {

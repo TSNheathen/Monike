@@ -7,3 +7,7 @@ dist/
 coverage/
 pb_data/
 tools/pocketbase/
+app/tools/pocketbase/
+.tmp/
+playwright-report/
+test-results/

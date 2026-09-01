@@ -9,12 +9,21 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pb:download": "powershell -ExecutionPolicy Bypass -File scripts/download-pocketbase.ps1",
-    "pb:serve": "powershell -ExecutionPolicy Bypass -File scripts/serve-pocketbase.ps1"
+    "test:migrations": "node scripts/test-migrations.mjs",
+    "test:image": "node scripts/test-pocketbase-image.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
+    "pb:download": "node scripts/pocketbase.mjs download",
+    "pb:reconcile": "node scripts/reconcile-pocketbase-settings.mjs",
+    "pb:serve": "node scripts/pocketbase.mjs serve",
+    "pb:test": "node scripts/test-pocketbase-server.mjs"
   },
   "dependencies": {
+    "@tiptap/core": "^2.27.2",
+    "@tiptap/extension-link": "^2.27.2",
     "@tiptap/react": "^2.14.0",
     "@tiptap/starter-kit": "^2.14.0",
+    "@vercel/functions": "^3.9.5",
     "glightbox": "^3.3.1",
     "lucide-react": "^0.468.0",
     "pocketbase": "^0.25.0",
@@ -23,6 +32,8 @@
     "react-router-dom": "^6.30.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",

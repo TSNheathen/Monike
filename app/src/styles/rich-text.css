@@ -1,0 +1,152 @@
+.rich-content,
+.editor-content .tiptap {
+  max-width: var(--measure-content);
+  color: var(--color-text);
+  font-family: var(--font-editorial);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.rich-content h2,
+.rich-content h3,
+.editor-content h2,
+.editor-content h3 {
+  color: var(--color-accent);
+  line-height: 1.25;
+}
+
+.rich-content a,
+.editor-content a {
+  color: var(--color-gold-300);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.rich-content blockquote,
+.editor-content blockquote {
+  margin-inline: 0;
+  padding-inline-start: 20px;
+  color: var(--color-text-muted);
+  border-inline-start: 2px solid var(--color-gold-400);
+}
+
+.rich-content img,
+.editor-content img {
+  height: auto;
+  max-width: 100%;
+}
+
+.rich-text-image {
+  width: var(--rich-image-width, 100%);
+  max-width: 100%;
+  margin-block: 1.5em;
+}
+
+.rich-text-image img {
+  display: block;
+  width: 100%;
+}
+
+.rich-text-image--align-left { margin-inline: 0 auto; }
+.rich-text-image--align-center { margin-inline: auto; }
+.rich-text-image--align-right { margin-inline: auto 0; }
+.rich-text-image--wrap-left { float: left; margin: 0.35em 1.5em 1em 0; }
+.rich-text-image--wrap-right { float: right; margin: 0.35em 0 1em 1.5em; }
+
+.rich-text-image--width-20 { --rich-image-width: 20%; }
+.rich-text-image--width-21 { --rich-image-width: 21%; }
+.rich-text-image--width-22 { --rich-image-width: 22%; }
+.rich-text-image--width-23 { --rich-image-width: 23%; }
+.rich-text-image--width-24 { --rich-image-width: 24%; }
+.rich-text-image--width-25 { --rich-image-width: 25%; }
+.rich-text-image--width-26 { --rich-image-width: 26%; }
+.rich-text-image--width-27 { --rich-image-width: 27%; }
+.rich-text-image--width-28 { --rich-image-width: 28%; }
+.rich-text-image--width-29 { --rich-image-width: 29%; }
+.rich-text-image--width-30 { --rich-image-width: 30%; }
+.rich-text-image--width-31 { --rich-image-width: 31%; }
+.rich-text-image--width-32 { --rich-image-width: 32%; }
+.rich-text-image--width-33 { --rich-image-width: 33%; }
+.rich-text-image--width-34 { --rich-image-width: 34%; }
+.rich-text-image--width-35 { --rich-image-width: 35%; }
+.rich-text-image--width-36 { --rich-image-width: 36%; }
+.rich-text-image--width-37 { --rich-image-width: 37%; }
+.rich-text-image--width-38 { --rich-image-width: 38%; }
+.rich-text-image--width-39 { --rich-image-width: 39%; }
+.rich-text-image--width-40 { --rich-image-width: 40%; }
+.rich-text-image--width-41 { --rich-image-width: 41%; }
+.rich-text-image--width-42 { --rich-image-width: 42%; }
+.rich-text-image--width-43 { --rich-image-width: 43%; }
+.rich-text-image--width-44 { --rich-image-width: 44%; }
+.rich-text-image--width-45 { --rich-image-width: 45%; }
+.rich-text-image--width-46 { --rich-image-width: 46%; }
+.rich-text-image--width-47 { --rich-image-width: 47%; }
+.rich-text-image--width-48 { --rich-image-width: 48%; }
+.rich-text-image--width-49 { --rich-image-width: 49%; }
+.rich-text-image--width-50 { --rich-image-width: 50%; }
+.rich-text-image--width-51 { --rich-image-width: 51%; }
+.rich-text-image--width-52 { --rich-image-width: 52%; }
+.rich-text-image--width-53 { --rich-image-width: 53%; }
+.rich-text-image--width-54 { --rich-image-width: 54%; }
+.rich-text-image--width-55 { --rich-image-width: 55%; }
+.rich-text-image--width-56 { --rich-image-width: 56%; }
+.rich-text-image--width-57 { --rich-image-width: 57%; }
+.rich-text-image--width-58 { --rich-image-width: 58%; }
+.rich-text-image--width-59 { --rich-image-width: 59%; }
+.rich-text-image--width-60 { --rich-image-width: 60%; }
+.rich-text-image--width-61 { --rich-image-width: 61%; }
+.rich-text-image--width-62 { --rich-image-width: 62%; }
+.rich-text-image--width-63 { --rich-image-width: 63%; }
+.rich-text-image--width-64 { --rich-image-width: 64%; }
+.rich-text-image--width-65 { --rich-image-width: 65%; }
+.rich-text-image--width-66 { --rich-image-width: 66%; }
+.rich-text-image--width-67 { --rich-image-width: 67%; }
+.rich-text-image--width-68 { --rich-image-width: 68%; }
+.rich-text-image--width-69 { --rich-image-width: 69%; }
+.rich-text-image--width-70 { --rich-image-width: 70%; }
+.rich-text-image--width-71 { --rich-image-width: 71%; }
+.rich-text-image--width-72 { --rich-image-width: 72%; }
+.rich-text-image--width-73 { --rich-image-width: 73%; }
+.rich-text-image--width-74 { --rich-image-width: 74%; }
+.rich-text-image--width-75 { --rich-image-width: 75%; }
+.rich-text-image--width-76 { --rich-image-width: 76%; }
+.rich-text-image--width-77 { --rich-image-width: 77%; }
+.rich-text-image--width-78 { --rich-image-width: 78%; }
+.rich-text-image--width-79 { --rich-image-width: 79%; }
+.rich-text-image--width-80 { --rich-image-width: 80%; }
+.rich-text-image--width-81 { --rich-image-width: 81%; }
+.rich-text-image--width-82 { --rich-image-width: 82%; }
+.rich-text-image--width-83 { --rich-image-width: 83%; }
+.rich-text-image--width-84 { --rich-image-width: 84%; }
+.rich-text-image--width-85 { --rich-image-width: 85%; }
+.rich-text-image--width-86 { --rich-image-width: 86%; }
+.rich-text-image--width-87 { --rich-image-width: 87%; }
+.rich-text-image--width-88 { --rich-image-width: 88%; }
+.rich-text-image--width-89 { --rich-image-width: 89%; }
+.rich-text-image--width-90 { --rich-image-width: 90%; }
+.rich-text-image--width-91 { --rich-image-width: 91%; }
+.rich-text-image--width-92 { --rich-image-width: 92%; }
+.rich-text-image--width-93 { --rich-image-width: 93%; }
+.rich-text-image--width-94 { --rich-image-width: 94%; }
+.rich-text-image--width-95 { --rich-image-width: 95%; }
+.rich-text-image--width-96 { --rich-image-width: 96%; }
+.rich-text-image--width-97 { --rich-image-width: 97%; }
+.rich-text-image--width-98 { --rich-image-width: 98%; }
+.rich-text-image--width-99 { --rich-image-width: 99%; }
+.rich-text-image--width-100 { --rich-image-width: 100%; }
+
+@media (max-width: 759px) {
+  .rich-content [data-wrap='left'],
+  .rich-content [data-wrap='right'] {
+    float: none;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .rich-text-image--wrap-left,
+  .rich-text-image--wrap-right {
+    float: none;
+    width: min(var(--rich-image-width, 100%), 100%);
+    margin: 1.5em auto;
+  }
+}
