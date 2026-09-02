@@ -15,11 +15,11 @@ vi.mock('./data/public-content.js', () => ({
     },
     cards: [
       ['gallery', 'GALERIE', '/gallery'],
-      ['cesty', 'CESTY & PŘÍBĚHY', '/blog?label=cesty'],
+      ['cesty', 'CESTY PODLE CMS', '/blog?label=vzpominky', 'vzpominky'],
       ['vzpominky', 'VZPOMÍNKY', '/blog?label=vzpominky'],
       ['kocicky-andy', 'KOČIČKY & ANDY', '/blog?label=kocicky-andy'],
       ['proces-tvorby', 'PROCES TVORBY', '/blog?label=proces-tvorby'],
-    ].map(([slot, title, href]) => ({
+    ].map(([slot, title, href, labelSlug = slot]) => ({
       id: slot,
       slot,
       title,
@@ -29,7 +29,7 @@ vi.mock('./data/public-content.js', () => ({
       image_width: 1024,
       image_height: 1536,
       expand: slot === 'gallery' ? {} : {
-        label: { id: `label-${slot}`, name: title, slug: slot, color: '#B88A36' },
+        label: { id: `label-${labelSlug}`, name: title, slug: labelSlug, color: '#B88A36' },
       },
     })),
   }),
@@ -57,8 +57,8 @@ describe('Moniké aplikace', () => {
     expect(within(navigation).getByRole('link', { name: 'DOMŮ' })).toBeInTheDocument()
     expect(within(navigation).getByRole('link', { name: 'GALERIE' })).toBeInTheDocument()
     expect(
-      within(navigation).getByRole('link', { name: 'CESTY & PŘÍBĚHY' }),
-    ).toBeInTheDocument()
+      within(navigation).getByRole('link', { name: 'CESTY PODLE CMS' }),
+    ).toHaveAttribute('href', '/blog?label=vzpominky')
     expect(within(navigation).getByRole('link', { name: 'O MNĚ' })).toBeInTheDocument()
     expect(
       within(navigation).getByRole('link', { name: 'KOČIČKY & ANDY' }),

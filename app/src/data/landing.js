@@ -19,12 +19,18 @@ export function landingCardHref(card) {
 
 export function landingNavigation(cards = []) {
   const bySlot = new Map(cards.map((card) => [card.slot, card]))
+  const cesty = bySlot.get('cesty')
+  const kocickyAndy = bySlot.get('kocicky-andy')
   return [
     { label: 'DOMŮ', href: '/' },
     { label: 'GALERIE', href: '/gallery' },
-    { label: 'CESTY & PŘÍBĚHY', href: landingCardHref(bySlot.get('cesty') || {}) },
+    ...(cesty?.title?.trim()
+      ? [{ label: cesty.title.trim(), href: landingCardHref(cesty) }]
+      : []),
     { label: 'O MNĚ', href: '/o-mne' },
-    { label: 'KOČIČKY & ANDY', href: landingCardHref(bySlot.get('kocicky-andy') || {}) },
+    ...(kocickyAndy?.title?.trim()
+      ? [{ label: kocickyAndy.title.trim(), href: landingCardHref(kocickyAndy) }]
+      : []),
     { label: 'KONTAKT', href: '/kontakt' },
   ]
 }
