@@ -5,7 +5,7 @@ import BlogPostPage from './BlogPostPage.jsx'
 const content = vi.hoisted(() => ({ loadArticlePage: vi.fn() }))
 vi.mock('../data/public-content.js', () => ({
   loadArticlePage: content.loadArticlePage,
-  loadLandingNavigation: async () => [],
+  loadLandingContent: async () => ({ cards: [], site: null }),
 }))
 
 function renderPage() {

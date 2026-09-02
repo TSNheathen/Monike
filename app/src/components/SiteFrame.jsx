@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ExternalLink, LogOut, Menu, X } from 'lucide-react'
+import { ExternalLink, Facebook, Instagram, LogOut, Menu, X } from 'lucide-react'
 import { landingNavigation } from '../data/landing.js'
-import { loadLandingNavigation } from '../data/public-content.js'
+import { loadLandingContent } from '../data/public-content.js'
 import { usePublicResource } from '../hooks/usePublicResource.js'
 import { api } from '../lib/pocketbase.js'
 import { useRouteFocus } from '../hooks/useRouteFocus.js'
@@ -21,7 +21,7 @@ function useDrawer() {
 function PublicNavigation({ items, mobile = false, close }) {
   const location = useLocation()
   return (
-    <nav className={mobile ? 'public-drawer__nav' : 'public-nav'} aria-label="Hlavní navigace">
+    <nav className={mobile ? 'public-drawer__nav' : 'side-nav'} aria-label="Hlavní navigace">
       {items.map((item) => {
         const [pathname, query = ''] = item.href.split('?')
         const active = location.pathname === pathname && (!query || location.search === `?${query}`)
@@ -44,20 +44,42 @@ function PublicNavigation({ items, mobile = false, close }) {
 export function PublicFrame({ title, children }) {
   const headingRef = useRouteFocus()
   const drawer = useDrawer()
-  const navigationRequest = usePublicResource(loadLandingNavigation)
+  const navigationRequest = usePublicResource(loadLandingContent)
+  const sidebarContent = navigationRequest.state === 'ready' ? navigationRequest.data : null
   const navigationItems = landingNavigation(
-    Array.isArray(navigationRequest.data) ? navigationRequest.data : [],
+    Array.isArray(sidebarContent?.cards) ? sidebarContent.cards : [],
   )
+  const instagramUrl = sidebarContent?.site?.instagram_url
+  const facebookUrl = sidebarContent?.site?.facebook_url
 
   return (
     <div className="public-shell">
       <SkipLink />
-      <header className="public-header">
-        <Link className="content-logo" to="/" aria-label="Domů Moniké">
+      <aside className="public-sidebar" aria-label="Postranní panel Moniké">
+        <Link className="top-logo" to="/" aria-label="Domů Moniké">
           <img src="/assets/landing/small-logo.svg" alt="" />
-          <span>Moniké</span>
         </Link>
         <PublicNavigation items={navigationItems} />
+        <div className="bottom-panel" aria-hidden="true" />
+        {(instagramUrl || facebookUrl) && (
+          <div className="social-links" aria-label="Sociální sítě">
+            {instagramUrl && (
+              <a href={instagramUrl} aria-label="Instagram Moniké" rel="noreferrer">
+                <Instagram aria-hidden="true" size={19} />
+              </a>
+            )}
+            {facebookUrl && (
+              <a href={facebookUrl} aria-label="Facebook Moniké" rel="noreferrer">
+                <Facebook aria-hidden="true" size={19} />
+              </a>
+            )}
+          </div>
+        )}
+      </aside>
+      <header className="public-header">
+        <Link className="public-mobile-logo" to="/" aria-label="Domů Moniké">
+          <img src="/assets/landing/small-logo.svg" alt="" />
+        </Link>
         <button
           ref={drawer.triggerRef}
           className="icon-button public-menu-trigger"

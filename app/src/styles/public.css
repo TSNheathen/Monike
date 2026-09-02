@@ -5,6 +5,11 @@
   background-color: var(--color-canvas);
 }
 
+.public-shell {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+}
+
 .landing-page {
   position: relative;
   overflow: hidden;
@@ -111,10 +116,13 @@
 .side-nav a:focus-visible::before { width: 44px; }
 
 .side-nav a:hover,
+.side-nav a.active,
 .mobile-menu a:hover,
 .public-nav a:hover,
 .public-nav a.active,
 .public-drawer__nav a.active { color: var(--color-ivory); }
+
+.side-nav a.active::before { width: 44px; }
 
 .mobile-menu {
   position: absolute;
@@ -141,7 +149,7 @@
   text-align: center;
   text-shadow: 0 3px 18px rgba(0, 0, 0, 0.95);
   transform: translateX(-50%);
-  background: radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.16) 70%);
+  background: transparent;
 }
 
 .hero-logo { width: min(440px, 92%); margin: 0 auto 4px; }
@@ -212,10 +220,22 @@
     linear-gradient(135deg, var(--color-ink-950), var(--color-ink-850) 58%, var(--color-ink-950));
 }
 
+.public-sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 100svh;
+  overflow: hidden;
+  border-right: 1px solid var(--color-border-subtle);
+  background: var(--color-ink-950);
+}
+
+.public-sidebar .bottom-panel { background-position: left center; }
+
 .public-header {
   position: relative;
   z-index: 20;
-  display: flex;
+  display: none;
   min-height: 92px;
   align-items: center;
   justify-content: space-between;
@@ -225,10 +245,11 @@
   background: rgba(5, 5, 5, 0.86);
 }
 
-.content-logo,
 .admin-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--color-gold-300); letter-spacing: 0.12em; text-decoration: none; }
-.content-logo img,
 .admin-brand img { width: 54px; }
+
+.public-mobile-logo { display: block; width: 92px; }
+.public-mobile-logo img { display: block; width: 100%; }
 
 .public-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 14px 24px; }
 .public-nav a { padding-block: 10px; border-bottom: 1px solid transparent; }
@@ -295,6 +316,8 @@
 }
 
 @media (max-width: 759px) {
+  .public-shell { display: block; }
+  .public-sidebar { display: none; }
   .landing-page { overflow-y: auto; }
   .top-logo { top: 18px; left: 20px; width: 92px; }
   .mobile-menu-button { display: inline-grid; }
@@ -305,8 +328,8 @@
   .category-cards { position: relative; left: auto; bottom: auto; width: 100%; padding: 0 20px 90px; transform: none; }
   .social-links { left: 20px; bottom: 20px; }
   .signature { right: 20px; bottom: 28px; max-width: 160px; text-align: right; }
-  .public-header { min-height: 76px; padding: 12px 20px; }
-  .content-logo img { width: 44px; }
+  .public-header { display: flex; min-height: 76px; padding: 12px 20px; }
+  .public-menu-trigger { display: inline-grid; }
   .content-page { padding: 20px; }
   .content-panel { padding: 24px 20px; }
   .post-card { grid-template-columns: 1fr; }

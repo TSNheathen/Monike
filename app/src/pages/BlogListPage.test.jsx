@@ -6,7 +6,7 @@ import BlogListPage from './BlogListPage.jsx'
 const content = vi.hoisted(() => ({ loadBlogListing: vi.fn() }))
 vi.mock('../data/public-content.js', () => ({
   loadBlogListing: content.loadBlogListing,
-  loadLandingNavigation: async () => [],
+  loadLandingContent: async () => ({ cards: [], site: null }),
 }))
 
 function renderPage(url = '/blog') {
@@ -40,6 +40,8 @@ describe('veřejný seznam blogu', () => {
     content.loadBlogListing.mockResolvedValue({ kind: 'ready', labels: [], selectedLabel: null, posts: [] })
     renderPage()
     expect(await screen.findByText('Zatím tu nejsou žádné publikované články.')).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Postranní panel Moniké' })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Hlavní navigace' })).toBeInTheDocument()
     expect(screen.queryByText('Skutečný článek')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Zkusit znovu' })).not.toBeInTheDocument()
   })
