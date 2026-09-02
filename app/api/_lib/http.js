@@ -24,10 +24,25 @@ export function runtimeEnvironment(environment = process.env) {
   const pocketBaseUrl = environment.MONIKE_POCKETBASE_URL || environment.VITE_POCKETBASE_URL
   const siteUrl = environment.MONIKE_SITE_URL || environment.VITE_SITE_URL
   if (!pocketBaseUrl || !siteUrl) throw new Error('Chybí veřejná PocketBase nebo webová URL.')
+  const pocketBase = new URL(pocketBaseUrl)
+  const site = new URL(siteUrl)
+  for (const [label, value, parsed] of [
+    ['PocketBase', pocketBaseUrl, pocketBase],
+    ['webová', siteUrl, site],
+  ]) {
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.username ||
+      parsed.password ||
+      parsed.origin !== value
+    ) {
+      throw new Error(`${label} URL musí být přesný HTTPS origin.`)
+    }
+  }
   return {
     name,
-    pocketBaseOrigin: new URL(pocketBaseUrl).origin,
-    siteOrigin: new URL(siteUrl).origin,
+    pocketBaseOrigin: pocketBase.origin,
+    siteOrigin: site.origin,
     noindex: name !== 'production',
   }
 }

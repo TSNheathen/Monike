@@ -23,11 +23,12 @@ routerUse((e) => {
 
 function sendHeartbeat(environmentName) {
   const url = $os.getenv(environmentName)
-  if (!url) throw new Error(`${environmentName} není nastavené.`)
+  if (!url) return false
   const response = $http.send({ method: 'GET', url, timeout: 10 })
   if (response.statusCode < 200 || response.statusCode >= 300) {
     throw new Error(`${environmentName} vrátilo neúspěšný stav.`)
   }
+  return true
 }
 
 function logHeartbeatFailure(app, event, error) {

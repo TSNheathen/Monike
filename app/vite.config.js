@@ -1,7 +1,10 @@
 import { configDefaults, defineConfig } from 'vitest/config'
 import { loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolveEnvironment } from './src/config/environment-policy.js'
+import {
+  resolveEnvironment,
+  validateDeploymentEnvironment,
+} from './src/config/environment-policy.js'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -10,6 +13,12 @@ export default defineConfig(({ mode }) => {
     mode,
     appEnvironment: env.VITE_APP_ENV,
     devFixtures: env.VITE_USE_DEV_FIXTURES,
+  })
+  validateDeploymentEnvironment({
+    appEnvironment: env.VITE_APP_ENV,
+    isVercel: env.VERCEL === '1',
+    pocketBaseUrl: env.VITE_POCKETBASE_URL,
+    siteUrl: env.VITE_SITE_URL,
   })
 
   return {

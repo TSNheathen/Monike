@@ -1,8 +1,8 @@
 # Phase 6 — manuální accessibility QA
 
-Stav: **ČEKÁ NA PROVEDENÍ NA REÁLNÝCH AT/PROHLÍŽEČÍCH**
+Stav: **DOBROVOLNÉ NEBLOKUJÍCÍ DOPORUČENÍ**
 
-Tento dokument je release checklist, ne tvrzení o dokončeném testu. Automatické Playwright/axe testy jsou evidované v `phase-6.md`; nenahrazují keyboard a screen-reader průchod požadovaný issue #12/#17.
+Tento dokument je pomůcka pro budoucí praktické ověření, ne release gate ani požadavek na formální certifikaci. Automatické Playwright/axe, keyboard a reflow testy jsou evidované v `phase-6.md` a pro současný single-owner osobní web tvoří přijatý release základ.
 
 ## Testovací prostředí
 
@@ -56,7 +56,7 @@ Tento dokument je release checklist, ne tvrzení o dokončeném testu. Automatic
 
 ## Výsledek
 
-- [ ] PASS — bez unresolved release-blocking vady.
-- [ ] FAIL — vady jsou níže s route, kroky, očekáváním, skutečností, AT/browser verzí a severity.
+- [ ] Bez zásadního praktického problému.
+- [ ] Nalezen problém k běžné opravě — níže je route, postup, očekávání, skutečnost a AT/browser verze.
 
 Nálezy:

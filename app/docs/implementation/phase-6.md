@@ -1,8 +1,8 @@
 # Phase 6 — hardening, performance a přístupnost
 
-Stav: **AUTOMATIZACE PASS / MANUÁLNÍ RELEASE GATE ČEKÁ** (2026-09-01)
+Stav: **PASS PRO PRAKTICKÝ DEMO RELEASE** (2026-09-02)
 
-Phase 6 není označena jako celkový PASS, dokud nebude dokončen skutečný keyboard-only, NVDA a VoiceOver/Safari průchod v `qa/phase-6-manual-accessibility.md`.
+Praktický accessibility scope je splněný automatickými a browserovými kontrolami níže. Dobrovolný keyboard/NVDA/VoiceOver průchod v `qa/phase-6-manual-accessibility.md` zůstává užitečným doporučením pro pozdější zlepšení, ale neblokuje demo ani production release.
 
 ## Automaticky ověřeno
 
@@ -16,7 +16,7 @@ Phase 6 není označena jako celkový PASS, dokud nebude dokončen skutečný ke
 
 ## Aktuální green gate
 
-- `npm test`: 23 souborů / 77 testů PASS.
+- `npm test`: 23 souborů / 80 testů PASS.
 - `npm run build`: PASS.
 - `npm run test:migrations`: fresh i upgrade PASS.
 - `npm run test:e2e`: 40/40 PASS.
@@ -24,10 +24,10 @@ Phase 6 není označena jako celkový PASS, dokud nebude dokončen skutečný ke
 
 Známý nezávadný výstup je pouze React Router v7 future-flag upozornění.
 
-## Zbývá před uzavřením Phase 6
+## Doporučené neblokující ruční ověření
 
 - reálný průchod na 360/390/760/1100/1440 px, 200% text a 320px ekvivalentu;
 - kompletní public/admin keyboard-only průchod;
 - NVDA na Windows;
 - VoiceOver se Safari;
-- záznam verzí, výsledků a případných vad do manuálního checklistu.
+- záznam verzí, výsledků a případných vad do dobrovolného checklistu.

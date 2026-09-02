@@ -23,8 +23,13 @@ export function securityHeaders(environment = process.env) {
     throw new Error('Neplatná konfigurace bezpečnostních hlaviček.')
   }
   const pocketBase = new URL(pocketBaseValue)
-  if (pocketBase.protocol !== 'https:' || pocketBase.username || pocketBase.password) {
-    throw new Error('Nasazený PocketBase musí používat veřejný HTTPS origin.')
+  if (
+    pocketBase.protocol !== 'https:' ||
+    pocketBase.username ||
+    pocketBase.password ||
+    pocketBase.origin !== pocketBaseValue
+  ) {
+    throw new Error('Nasazený PocketBase musí používat přesný veřejný HTTPS origin.')
   }
   const apiOrigin = pocketBase.origin
   const contentSecurityPolicy = [

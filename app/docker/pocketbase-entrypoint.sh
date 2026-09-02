@@ -76,17 +76,19 @@ for required_name in \
   MONIKE_R2_BUCKET \
   MONIKE_R2_REGION \
   MONIKE_R2_ACCESS_KEY_ID \
-  MONIKE_R2_SECRET_ACCESS_KEY \
-  MONIKE_BACKUP_HEARTBEAT_URL \
-  MONIKE_CLEANUP_HEARTBEAT_URL \
-  MONIKE_STORAGE_HEARTBEAT_URL
+  MONIKE_R2_SECRET_ACCESS_KEY
 do
   require_value "$required_name"
 done
 validate_https_origin "$MONIKE_R2_ENDPOINT"
-validate_https_url "$MONIKE_BACKUP_HEARTBEAT_URL"
-validate_https_url "$MONIKE_CLEANUP_HEARTBEAT_URL"
-validate_https_url "$MONIKE_STORAGE_HEARTBEAT_URL"
+
+for optional_heartbeat in \
+  "${MONIKE_BACKUP_HEARTBEAT_URL:-}" \
+  "${MONIKE_CLEANUP_HEARTBEAT_URL:-}" \
+  "${MONIKE_STORAGE_HEARTBEAT_URL:-}"
+do
+  [ -z "$optional_heartbeat" ] || validate_https_url "$optional_heartbeat"
+done
 
 api_hsts_max_age="${MONIKE_API_HSTS_MAX_AGE:-300}"
 case "$api_hsts_max_age" in

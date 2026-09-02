@@ -9,8 +9,9 @@ Pro každé prostředí samostatně vytvoř:
 - Fly App v `fra`, jeden 5GB encrypted Volume a custom HTTPS API hostname;
 - Vercel project s Root Directory `app/` a stabilní frontend doménou;
 - private Cloudflare R2 Standard bucket a bucket-scoped key;
-- Better Stack monitory pro web a `/api/health/ready` a tři heartbeat URL pro backup, cleanup a storage;
 - unikátní `PB_ENCRYPTION_KEY`, `_superusers` credential a normální `admins` credential.
+
+Volitelně lze přidat jednoduchý externí uptime check `/api/health/ready` a heartbeat URL pro backup/cleanup/storage. Aplikace je nevyžaduje a jejich absence neblokuje start ani release.
 
 Demo a production nesdílí App, Volume, doménu, bucket, key, encryption key, účet ani deployment token. Pokud jsou konceptuální Fly názvy už obsazené, změň `app` ve správném TOML na jednoznačný globálně unikátní název; identitu prostředí v názvu zachovej.
 
@@ -31,13 +32,13 @@ Před prvním startem vlož do environment-scoped Fly secret/config storage tyto
 | `MONIKE_R2_REGION` | R2 region hodnota, obvykle `auto` |
 | `MONIKE_R2_ACCESS_KEY_ID` | environment-specific scoped key |
 | `MONIKE_R2_SECRET_ACCESS_KEY` | environment-specific scoped secret |
-| `MONIKE_BACKUP_HEARTBEAT_URL` | tajná Better Stack heartbeat URL |
-| `MONIKE_CLEANUP_HEARTBEAT_URL` | tajná Better Stack heartbeat URL |
-| `MONIKE_STORAGE_HEARTBEAT_URL` | tajná Better Stack heartbeat URL |
+| `MONIKE_BACKUP_HEARTBEAT_URL` | volitelná tajná heartbeat URL |
+| `MONIKE_CLEANUP_HEARTBEAT_URL` | volitelná tajná heartbeat URL |
+| `MONIKE_STORAGE_HEARTBEAT_URL` | volitelná tajná heartbeat URL |
 
 `APP_ENV`, `MONIKE_ENV` a `GOMEMLIMIT` jsou v TOML. Pro první HSTS rollout může zůstat `MONIKE_API_HSTS_MAX_AGE` nenastavené (default 300); `MONIKE_API_HSTS_INCLUDE_SUBDOMAINS` musí zůstat vypnuté.
 
-Entrypoint konfiguraci validuje a bootstrap ji zapisuje do PocketBase settings. Chybějící kritická hodnota musí start zastavit a readiness nesmí projít.
+Entrypoint konfiguraci validuje a bootstrap ji zapisuje do PocketBase settings. Chybějící kritická hodnota musí start zastavit a readiness nesmí projít. Heartbeat hodnoty jsou nepovinné; pokud existují, musí být HTTPS.
 
 ## 3. Build a immutable image
 
@@ -67,7 +68,7 @@ Release tag má tvar `pb-0.40.1-g<12-char-sha>`. Po přihlášení do Fly regist
 7. V demo Vercel projektu nastav `VITE_APP_ENV=demo`, přesné `VITE_POCKETBASE_URL`, `VITE_SITE_URL`, jejich server-only protějšky `MONIKE_ENV`, `MONIKE_POCKETBASE_URL`, `MONIKE_SITE_URL` a `MONIKE_HSTS_MAX_AGE=300`. Sample/fixture flag nesmí existovat nebo být true.
 8. Deployni stejný Git commit. Ověř globální `noindex,nofollow`, CSP a routing 200/308/404/503.
 9. Data doplň přes migrace a normální admin workflow. Frontend fixtures nejsou seed ani fallback.
-10. Proveď full demo acceptance matrix, backup a restore drill.
+10. Proveď krátký smoke hlavních public/admin toků a jeden backup/restore drill.
 
 ## 5. Backup a restore drill
 
@@ -82,14 +83,14 @@ Demo drill je měsíční, production čtvrtletní. Neověřená existence R2 ob
 
 ## 6. Production promotion
 
-Před produkcí musí být Phase 6 manuálně PASS a demo Phase 7 celé PASS.
+Před produkcí musí být zelené automatické testy a ověřený funkční demo deployment. Ruční NVDA/VoiceOver checklist je doporučení, nikoli gate.
 
-1. Ověř poslední backup, monitory a kapacitu; pro migration/write-path release vytvoř named predeploy PocketBase backup a u rizikové změny on-demand Fly snapshot.
+1. Ověř poslední backup a kapacitu; pro migration/write-path release vytvoř named predeploy PocketBase backup a u rizikové změny on-demand Fly snapshot.
 2. Zaznamenej současný backend digest, migration head a Vercel deployment.
 3. Deployni do production přesně demo-tested image digest s `fly.production.toml`.
 4. Po backend readiness proveď auth/rules/upload/protected-file/CORS/rate/custom-route smoke.
 5. Až potom deployni production Vercel project ze stejného commitu s production-only URLs/secrets.
-6. Proveď public/admin/HTTP metadata/header smoke a zkontroluj monitory/heartbeats.
+6. Proveď public/admin/HTTP metadata/header smoke a zkontroluj backup. Pokud jsou nakonfigurované volitelné monitory, ověř i je.
 
 ## 7. HSTS postup
 

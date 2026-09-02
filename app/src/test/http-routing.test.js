@@ -217,7 +217,7 @@ describe('Vercel configuration', () => {
   it('emits the strict script, framing and browser policy headers with only the configured API origin', () => {
     const headers = securityHeaders({
       MONIKE_ENV: 'production',
-      MONIKE_POCKETBASE_URL: 'https://api.monike.example/path-is-ignored',
+      MONIKE_POCKETBASE_URL: 'https://api.monike.example',
     })
     expect(headers['Content-Security-Policy']).toContain("script-src 'self'; script-src-attr 'none'")
     expect(headers['Content-Security-Policy']).toContain("frame-ancestors 'none'")
@@ -249,7 +249,20 @@ describe('Vercel configuration', () => {
   it('fails security-header configuration closed for HTTP, credentials or unknown environments', () => {
     expect(() => securityHeaders({ MONIKE_ENV: 'production', MONIKE_POCKETBASE_URL: 'http://api.example' })).toThrow()
     expect(() => securityHeaders({ MONIKE_ENV: 'production', MONIKE_POCKETBASE_URL: 'https://user:pass@api.example' })).toThrow()
+    expect(() => securityHeaders({ MONIKE_ENV: 'production', MONIKE_POCKETBASE_URL: 'https://api.example/path' })).toThrow()
     expect(() => securityHeaders({ MONIKE_ENV: 'preview', MONIKE_POCKETBASE_URL: 'https://api.example' })).toThrow()
+  })
+
+  it('fails server routes closed for non-HTTPS or non-origin deployment URLs', async () => {
+    for (const environment of [
+      { ...production, MONIKE_POCKETBASE_URL: 'http://pb.example.test' },
+      { ...production, MONIKE_SITE_URL: 'https://monike.example/path' },
+    ]) {
+      const response = await createBlogRoute({ environment, loadHtml: staticHtml })(
+        new Request('https://function.example/api/blog-route?slug=zlaty-pribeh'),
+      )
+      expect(response.status).toBe(503)
+    }
   })
 
   it('fails the production sitemap closed when PocketBase is unavailable', async () => {

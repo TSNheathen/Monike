@@ -26,9 +26,6 @@ try {
     '-e', 'MONIKE_R2_REGION=auto',
     '-e', 'MONIKE_R2_ACCESS_KEY_ID=local-smoke-key',
     '-e', 'MONIKE_R2_SECRET_ACCESS_KEY=local-smoke-secret',
-    '-e', 'MONIKE_BACKUP_HEARTBEAT_URL=https://uptime.example/backup-token',
-    '-e', 'MONIKE_CLEANUP_HEARTBEAT_URL=https://uptime.example/cleanup-token',
-    '-e', 'MONIKE_STORAGE_HEARTBEAT_URL=https://uptime.example/storage-token',
     imageName,
   ])
 

@@ -30,3 +30,34 @@ export function resolveEnvironment({ mode, appEnvironment, devFixtures }) {
 
   return Object.freeze({ name, useDevFixtures })
 }
+
+function exactHttpsOrigin(value, name) {
+  if (!value) throw new Error(`${name} je povinné pro nasazený build.`)
+  let url
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error(`${name} musí být platný HTTPS origin.`)
+  }
+  if (url.protocol !== 'https:' || url.username || url.password || url.origin !== value) {
+    throw new Error(`${name} musí být přesný HTTPS origin bez cesty.`)
+  }
+  return url.origin
+}
+
+export function validateDeploymentEnvironment({
+  appEnvironment,
+  isVercel,
+  pocketBaseUrl,
+  siteUrl,
+}) {
+  const isExplicitDeployment = ['demo', 'production'].includes(appEnvironment)
+  if (!isVercel && !isExplicitDeployment) return null
+  if (!isExplicitDeployment) {
+    throw new Error('Vercel build vyžaduje explicitní VITE_APP_ENV=demo nebo production.')
+  }
+  return Object.freeze({
+    pocketBaseOrigin: exactHttpsOrigin(pocketBaseUrl, 'VITE_POCKETBASE_URL'),
+    siteOrigin: exactHttpsOrigin(siteUrl, 'VITE_SITE_URL'),
+  })
+}
