@@ -26,7 +26,7 @@ export function createSitemapRoute({ fetchImpl = fetch, environment = process.en
           page: String(page),
           perPage: '500',
           sort: '-published_at,-created',
-          filter: 'published = true && categories:length > 0',
+          filter: 'published = true && labels:length > 0',
         })
         const response = await fetchImpl(
           `${configuration.pocketBaseOrigin}/api/collections/posts/records?${query}`,
@@ -49,7 +49,7 @@ export function createSitemapRoute({ fetchImpl = fetch, environment = process.en
       })
     }
     const slugs = posts
-      .filter((post) => post.published === true && Array.isArray(post.categories) && post.categories.length > 0)
+      .filter((post) => post.published === true && Array.isArray(post.labels) && post.labels.length > 0)
       .map((post) => post.slug)
     if (slugs.some((slug) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))) {
       return new Response('Sitemap teď není dostupná.', { status: 503, headers: { 'Cache-Control': 'no-store', 'Retry-After': '60' } })

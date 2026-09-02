@@ -10,6 +10,7 @@ import {
 } from './lib/pocketbase.mjs'
 
 const initialMigration = '20260610142000_initial_monike_collections.js'
+const editableLabelsMigration = '20260902100000_editable_blog_labels.js'
 const sourceMigrations = path.join(appRoot, 'pb_migrations')
 const hooksDirectory = path.join(appRoot, 'pb_hooks')
 const testRoot = path.join(appRoot, '.tmp', 'migration-tests')
@@ -120,10 +121,11 @@ async function superuserClient(url) {
 
 async function assertFinalSchema(url) {
   const client = await superuserClient(url)
-  const [admins, posts, gallery, aliases, site, cards, about, assets] =
+  const [admins, posts, labels, gallery, aliases, site, cards, about, assets] =
     await Promise.all([
       client.collections.getOne('admins'),
       client.collections.getOne('posts'),
+      client.collections.getOne('blog_labels'),
       client.collections.getOne('gallery_images'),
       client.collections.getOne('post_slug_aliases'),
       client.collections.getOne('site_content'),
@@ -134,14 +136,11 @@ async function assertFinalSchema(url) {
 
   assert.equal(admins.authToken.duration, 28_800)
   assert.equal(admins.listRule, null)
-  const categories = posts.fields.find((field) => field.name === 'categories')
-  assert.deepEqual(categories.values, [
-    'cesty',
-    'vzpominky',
-    'kocicky-andy',
-    'proces-tvorby',
-  ])
-  assert.equal(categories.required, true)
+  assert.equal(posts.fields.some((field) => field.name === 'categories'), false)
+  const labelRelation = posts.fields.find((field) => field.name === 'labels')
+  assert.equal(labelRelation.required, true)
+  assert.equal(labelRelation.collectionId, labels.id)
+  assert.ok(labelRelation.maxSelect > 4)
   assert.equal(posts.fields.find((field) => field.name === 'cover_image').protected, true)
   assert.equal(posts.createRule, null)
   assert.equal(posts.deleteRule, null)
@@ -161,11 +160,19 @@ async function assertFinalSchema(url) {
   assert.equal(assets.updateRule, null)
   assert.equal(assets.deleteRule, null)
 
-  const [siteRecords, cardRecords, aboutRecords] = await Promise.all([
+  const [labelRecords, siteRecords, cardRecords, aboutRecords] = await Promise.all([
+    client.collection('blog_labels').getFullList({ sort: 'sort_order' }),
     client.collection('site_content').getFullList(),
     client.collection('landing_cards').getFullList(),
     client.collection('about_page').getFullList(),
   ])
+  assert.deepEqual(labelRecords.map((record) => record.slug), [
+    'cesty',
+    'vzpominky',
+    'kocicky-andy',
+    'proces-tvorby',
+  ])
+  assert.ok(labelRecords.every((record) => /^#[0-9A-F]{6}$/i.test(record.color)))
   assert.equal(siteRecords.length, 1)
   assert.equal(siteRecords[0].key, 'main')
   assert.equal(cardRecords.length, 5)
@@ -173,6 +180,7 @@ async function assertFinalSchema(url) {
     cardRecords.map((record) => record.slot).sort(),
     ['gallery', 'cesty', 'vzpominky', 'kocicky-andy', 'proces-tvorby'].sort(),
   )
+  assert.equal(cardRecords.filter((record) => record.label).length, 4)
   assert.equal(aboutRecords.length, 1)
   assert.equal(aboutRecords[0].key, 'main')
 }
@@ -223,7 +231,7 @@ async function testPrototypeUpgrade() {
     await assertFinalSchema(url)
     const client = await superuserClient(url)
     const legacy = await client.collection('posts').getOne(legacyId)
-    assert.deepEqual(legacy.categories, [])
+    assert.deepEqual(legacy.labels, [])
     assert.equal(legacy.published, true)
 
     const guest = new PocketBase(url)
@@ -234,7 +242,47 @@ async function testPrototypeUpgrade() {
   console.log('PASS upgrade: prototypová data zůstala zachována bez odhadu kategorií')
 }
 
+async function testFixedCategoryUpgrade() {
+  const root = path.join(testRoot, 'fixed-category-upgrade')
+  const dataDir = path.join(root, 'data')
+  const migrationsDir = path.join(root, 'migrations')
+  await rm(root, { recursive: true, force: true })
+  await copyMigrations(migrationsDir, (name) => name !== editableLabelsMigration)
+  await migrate(dataDir, migrationsDir)
+  await upsertSuperuser(dataDir, migrationsDir)
+
+  let postId = ''
+  await withServer({ dataDir, migrationsDir, port: 8094 }, async (url) => {
+    const client = await superuserClient(url)
+    const post = await client.collection('posts').create({
+      title: 'Článek s původními kategoriemi',
+      slug: 'clanek-s-puvodnimi-kategoriemi',
+      excerpt: 'Kontrola převodu membership.',
+      categories: ['cesty', 'proces-tvorby'],
+      content_json: { type: 'doc', content: [{ type: 'paragraph' }] },
+      content_html: '<p></p>',
+      published: false,
+    })
+    postId = post.id
+  })
+
+  await copyMigrations(migrationsDir, (name) => name === editableLabelsMigration)
+  await migrate(dataDir, migrationsDir)
+  await withServer({ dataDir, migrationsDir, port: 8094 }, async (url) => {
+    await assertFinalSchema(url)
+    const client = await superuserClient(url)
+    const post = await client.collection('posts').getOne(postId, { expand: 'labels' })
+    assert.deepEqual(
+      post.expand.labels.map((label) => label.slug).sort(),
+      ['cesty', 'proces-tvorby'],
+    )
+  })
+
+  console.log('PASS category upgrade: původní memberships jsou převedené na relations')
+}
+
 await rm(testRoot, { recursive: true, force: true })
 await mkdir(testRoot, { recursive: true })
 await testFreshMigration()
 await testPrototypeUpgrade()
+await testFixedCategoryUpgrade()

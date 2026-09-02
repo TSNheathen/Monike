@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { BLOG_CATEGORIES } from '../config/categories.js'
 import { StatePanel } from './AsyncState.jsx'
 
 export function PublicRequestState({ state, emptyMessage, onRetry, retrying = false, children }) {
@@ -17,21 +16,43 @@ export function PublicRequestState({ state, emptyMessage, onRetry, retrying = fa
   return children
 }
 
-export function BlogCategoryNavigation({ currentKey = null }) {
+export function labelAccent(label) {
+  return { '--label-color': label?.color || '#B88A36' }
+}
+
+export function BlogLabelNavigation({ labels = [], currentSlug = null }) {
   return (
-    <nav className="category-nav" aria-label="Kategorie blogu">
-      <Link className={!currentKey ? 'active' : undefined} to="/blog">Všechny články</Link>
-      {BLOG_CATEGORIES.map((category) => (
+    <nav className="label-nav" aria-label="Labely blogu">
+      <Link className={!currentSlug ? 'active' : undefined} to="/blog">Všechny články</Link>
+      {labels.map((label) => (
         <Link
-          key={category.key}
-          className={currentKey === category.key ? 'active' : undefined}
-          aria-current={currentKey === category.key ? 'page' : undefined}
-          to={`/blog?category=${category.key}`}
+          key={label.id}
+          className={currentSlug === label.slug ? 'active' : undefined}
+          aria-current={currentSlug === label.slug ? 'page' : undefined}
+          style={labelAccent(label)}
+          to={`/blog?label=${encodeURIComponent(label.slug)}`}
         >
-          {category.label}
+          {label.name}
         </Link>
       ))}
     </nav>
+  )
+}
+
+export function BlogLabelChips({ labels = [] }) {
+  if (!labels.length) return null
+  return (
+    <div className="label-chips" aria-label="Labely článku">
+      {labels.map((label) => (
+        <Link
+          key={label.id}
+          style={labelAccent(label)}
+          to={`/blog?label=${encodeURIComponent(label.slug)}`}
+        >
+          {label.name}
+        </Link>
+      ))}
+    </div>
   )
 }
 

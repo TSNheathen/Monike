@@ -1,7 +1,7 @@
 import { DEV_FIXTURES_ENABLED } from '../config/environment.js'
 import { configurationError, MonikeApiError, API_ERROR_KINDS } from '../lib/api-errors.js'
 import { api } from '../lib/pocketbase.js'
-import { LANDING_CARD_SLOTS } from './landing.js'
+import { LANDING_CARD_SLOTS, landingCardHref } from './landing.js'
 import { devContentFixtures } from '../fixtures/dev/content.js'
 
 function requireRecord(record, name) {
@@ -24,16 +24,40 @@ export async function loadLandingContent() {
     site,
     cards: LANDING_CARD_SLOTS.map((definition) => ({
       ...bySlot.get(definition.slot),
-      href: definition.href,
+      href: landingCardHref(bySlot.get(definition.slot)),
     })),
   }
 }
 
-export async function loadPosts(categoryKey = null) {
-  if (!DEV_FIXTURES_ENABLED) return api.posts(true, categoryKey)
-  return categoryKey
-    ? devContentFixtures.posts.filter((post) => post.categories?.includes(categoryKey))
+export async function loadLandingNavigation() {
+  return DEV_FIXTURES_ENABLED ? devContentFixtures.landingCards : api.landingCards()
+}
+
+export async function loadBlogLabels() {
+  return DEV_FIXTURES_ENABLED ? devContentFixtures.blogLabels : api.blogLabels()
+}
+
+export async function loadPosts(labelId = null) {
+  if (!DEV_FIXTURES_ENABLED) return api.posts(true, labelId)
+  return labelId
+    ? devContentFixtures.posts.filter((post) => post.labels?.includes(labelId))
     : devContentFixtures.posts
+}
+
+export async function loadBlogListing(labelSlug = null) {
+  const labels = await loadBlogLabels()
+  const selectedLabel = labelSlug
+    ? labels.find((label) => label.slug === labelSlug) || null
+    : null
+  if (labelSlug && !selectedLabel) {
+    return { kind: 'invalid', labels, selectedLabel: null, posts: [] }
+  }
+  return {
+    kind: 'ready',
+    labels,
+    selectedLabel,
+    posts: await loadPosts(selectedLabel?.id || null),
+  }
 }
 
 export async function loadArticle(slug) {
@@ -43,6 +67,11 @@ export async function loadArticle(slug) {
     throw new MonikeApiError(API_ERROR_KINDS.NOT_FOUND, 'Článek nebyl nalezen.', { status: 404 })
   }
   return { kind: 'canonical', record }
+}
+
+export async function loadArticlePage(slug) {
+  const [result, labels] = await Promise.all([loadArticle(slug), loadBlogLabels()])
+  return { result, labels }
 }
 
 export async function loadGallery() {

@@ -2,8 +2,8 @@ import { absoluteSiteUrl, applyPageMetadata, pageMetadata } from './metadata.js'
 
 describe('metadata veřejných tras', () => {
   it('staví kanonické URL pouze z nakonfigurovaného originu', () => {
-    expect(absoluteSiteUrl('/blog?category=cesty')).toBe(
-      'http://127.0.0.1:5173/blog?category=cesty',
+    expect(absoluteSiteUrl('/blog?label=cesty')).toBe(
+      'http://127.0.0.1:5173/blog?label=cesty',
     )
   })
 

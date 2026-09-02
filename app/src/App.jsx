@@ -12,6 +12,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'))
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage.jsx'))
 const AdminBlogPage = lazy(() => import('./pages/AdminBlogPage.jsx'))
 const AdminBlogEditorPage = lazy(() => import('./pages/AdminBlogEditorPage.jsx'))
+const AdminLabelsPage = lazy(() => import('./pages/AdminLabelsPage.jsx'))
 const AdminGalleryPage = lazy(() => import('./pages/AdminGalleryPage.jsx'))
 const AdminGalleryEditorPage = lazy(() => import('./pages/AdminGalleryEditorPage.jsx'))
 const AdminLandingPage = lazy(() => import('./pages/AdminLandingPage.jsx'))
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/admin/blog" element={<RequireAdmin><AdminBlogPage /></RequireAdmin>} />
         <Route path="/admin/blog/new" element={<RequireAdmin><AdminBlogEditorPage /></RequireAdmin>} />
         <Route path="/admin/blog/:id/edit" element={<RequireAdmin><AdminBlogEditorPage /></RequireAdmin>} />
+        <Route path="/admin/labels" element={<RequireAdmin><AdminLabelsPage /></RequireAdmin>} />
         <Route path="/admin/gallery" element={<RequireAdmin><AdminGalleryPage /></RequireAdmin>} />
         <Route path="/admin/gallery/new" element={<RequireAdmin><AdminGalleryEditorPage /></RequireAdmin>} />
         <Route path="/admin/gallery/:id/edit" element={<RequireAdmin><AdminGalleryEditorPage /></RequireAdmin>} />

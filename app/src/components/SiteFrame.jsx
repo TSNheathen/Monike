@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ExternalLink, LogOut, Menu, X } from 'lucide-react'
-import { navItems } from '../data/landing.js'
+import { landingNavigation } from '../data/landing.js'
+import { loadLandingNavigation } from '../data/public-content.js'
+import { usePublicResource } from '../hooks/usePublicResource.js'
 import { api } from '../lib/pocketbase.js'
 import { useRouteFocus } from '../hooks/useRouteFocus.js'
 import ModalDrawer from './ModalDrawer.jsx'
@@ -16,11 +18,11 @@ function useDrawer() {
   return { open, setOpen, triggerRef }
 }
 
-function PublicNavigation({ mobile = false, close }) {
+function PublicNavigation({ items, mobile = false, close }) {
   const location = useLocation()
   return (
     <nav className={mobile ? 'public-drawer__nav' : 'public-nav'} aria-label="Hlavní navigace">
-      {navItems.map((item) => {
+      {items.map((item) => {
         const [pathname, query = ''] = item.href.split('?')
         const active = location.pathname === pathname && (!query || location.search === `?${query}`)
         return (
@@ -42,6 +44,10 @@ function PublicNavigation({ mobile = false, close }) {
 export function PublicFrame({ title, children }) {
   const headingRef = useRouteFocus()
   const drawer = useDrawer()
+  const navigationRequest = usePublicResource(loadLandingNavigation)
+  const navigationItems = landingNavigation(
+    Array.isArray(navigationRequest.data) ? navigationRequest.data : [],
+  )
 
   return (
     <div className="public-shell">
@@ -51,7 +57,7 @@ export function PublicFrame({ title, children }) {
           <img src="/assets/landing/small-logo.svg" alt="" />
           <span>Moniké</span>
         </Link>
-        <PublicNavigation />
+        <PublicNavigation items={navigationItems} />
         <button
           ref={drawer.triggerRef}
           className="icon-button public-menu-trigger"
@@ -81,7 +87,7 @@ export function PublicFrame({ title, children }) {
             >
               <X aria-hidden="true" />
             </button>
-            <PublicNavigation mobile close={() => drawer.setOpen(false)} />
+            <PublicNavigation items={navigationItems} mobile close={() => drawer.setOpen(false)} />
           </div>
         </ModalDrawer>
       )}
@@ -99,6 +105,7 @@ function AdminNavigation({ close }) {
   return (
     <nav className="admin-nav" aria-label="Hlavní navigace administrace">
       <NavLink end to="/admin/blog" onClick={close}>Blog</NavLink>
+      <NavLink end to="/admin/labels" onClick={close}>Labels</NavLink>
       <NavLink end to="/admin/gallery" onClick={close}>Galerie</NavLink>
       <div className="admin-nav__group">
         <span>Web</span>

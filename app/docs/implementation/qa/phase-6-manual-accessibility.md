@@ -25,7 +25,7 @@ Tento dokument je pomůcka pro budoucí praktické ověření, ne release gate a
 ## Keyboard — public
 
 - [ ] `/`: skip link, navigace, CTA, pět karet, sociální odkazy a mobilní drawer.
-- [ ] `/blog`: kategorie, článek, empty/error retry; validní i neplatná kategorie.
+- [ ] `/blog`: labels, článek, empty/error retry; validní i neplatný label.
 - [ ] `/blog/:slug`: canonical obsah, chips, rich text, návrat; samostatně 404 a 503.
 - [ ] `/gallery`: všechny položky, open/previous/next/Escape/close a přesný focus return.
 - [ ] `/o-mne`, `/kontakt` a neznámá 404 bez keyboard dead end.
@@ -33,7 +33,7 @@ Tento dokument je pomůcka pro budoucí praktické ověření, ne release gate a
 ## Keyboard — admin
 
 - [ ] Login, navigace a mobilní drawer.
-- [ ] Blog new/draft/edit, kategorie, slug/history, publish/unpublish/delete a dirty confirm.
+- [ ] Blog new/draft/edit, labels, slug/history, publish/unpublish/delete a dirty confirm.
 - [ ] Tiptap formátování a inline obrázek insert/edit/remove včetně všech atributů.
 - [ ] Cover upload/replace/remove, upload failure/retry a save failure/retry.
 - [ ] Auth-expiry re-login a conflict stav bez ztráty lokální práce.

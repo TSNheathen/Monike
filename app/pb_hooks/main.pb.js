@@ -58,6 +58,10 @@ routerAdd('POST', '/api/monike/posts/{id}/delete', (e) => {
   return require(`${__hooks}/lib/operations.js`).deletePost(e)
 }, $apis.bodyLimit(16 * 1024))
 
+routerAdd('POST', '/api/monike/labels/{id}/delete', (e) => {
+  return require(`${__hooks}/lib/operations.js`).deleteLabel(e)
+}, $apis.bodyLimit(16 * 1024))
+
 routerAdd('POST', '/api/monike/about/save', (e) => {
   return require(`${__hooks}/lib/operations.js`).saveAbout(e)
 }, $apis.bodyLimit(2 * 1024 * 1024))
@@ -225,6 +229,10 @@ onRecordUpdateRequest((e) => {
   operations.validateAboutPortrait(e.record)
   return e.next()
 }, 'about_page')
+
+onRecordDeleteRequest((e) => {
+  return require(`${__hooks}/lib/operations.js`).validateLabelDelete(e)
+}, 'blog_labels')
 
 onRecordValidate((e) => {
   require(`${__hooks}/lib/operations.js`).validateAssetOwner(e.record)

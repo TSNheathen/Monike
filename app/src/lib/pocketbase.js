@@ -76,10 +76,11 @@ export const api = {
   logout() {
     pb.authStore.clear()
   },
-  async posts(publishedOnly = true, categoryKey = null) {
+  async posts(publishedOnly = true, labelId = null) {
     return list('posts', {
       sort: '-published_at,-created',
-      filter: publishedOnly ? publishedPostsFilter(pb, categoryKey) : undefined,
+      filter: publishedOnly ? publishedPostsFilter(pb, labelId) : undefined,
+      expand: 'labels',
     })
   },
   async postBySlug(slug) {
@@ -90,7 +91,7 @@ export const api = {
   },
   async postById(id) {
     try {
-      return await pb.collection('posts').getOne(id)
+      return await pb.collection('posts').getOne(id, { expand: 'labels' })
     } catch (error) {
       throw normalizeApiError(error, 'Článek se nepodařilo načíst.')
     }
@@ -158,6 +159,21 @@ export const api = {
       body: { expectedUpdated },
     })
   },
+  async blogLabels() {
+    return list('blog_labels', { sort: 'sort_order,name' })
+  },
+  async createBlogLabel(data) {
+    return createRecord('blog_labels', data)
+  },
+  async updateBlogLabel(id, data) {
+    return updateRecord('blog_labels', id, data)
+  },
+  async deleteBlogLabel(id) {
+    return send(`/api/monike/labels/${encodeURIComponent(id)}/delete`, {
+      method: 'POST',
+      body: {},
+    })
+  },
   async updatePostCover(id, data) {
     return updateRecord('posts', id, data)
   },
@@ -177,7 +193,7 @@ export const api = {
     })
   },
   async landingCards() {
-    return list('landing_cards', { sort: 'slot' })
+    return list('landing_cards', { sort: 'slot', expand: 'label' })
   },
   async updateLandingCard(id, data) {
     return updateRecord('landing_cards', id, data)

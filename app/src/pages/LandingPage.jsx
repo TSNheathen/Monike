@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Menu, X } from 'lucide-react'
-import { navItems } from '../data/landing.js'
+import { landingNavigation } from '../data/landing.js'
 import { loadLandingContent } from '../data/public-content.js'
 import { usePublicResource } from '../hooks/usePublicResource.js'
 import { usePageMetadata } from '../hooks/usePageMetadata.js'
@@ -37,6 +37,7 @@ export default function LandingPage() {
   const headingRef = useRouteFocus()
   const request = usePublicResource(loadLandingContent)
   const content = request.state === 'ready' ? request.data : null
+  const navItems = landingNavigation(content?.cards || [])
   usePageMetadata(METADATA)
 
   return (

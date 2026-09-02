@@ -6,7 +6,7 @@ import { Dialog } from '../components/Dialog.jsx'
 import { StatePanel, StatusBadge, StatusMessage } from '../components/AsyncState.jsx'
 import ReauthenticationDialog from '../components/ReauthenticationDialog.jsx'
 import UnsavedChangesDialog from '../components/UnsavedChangesDialog.jsx'
-import { BLOG_CATEGORIES } from '../config/categories.js'
+import { labelAccent } from '../components/PublicContent.jsx'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges.js'
 import { API_ERROR_KINDS, isAuthenticationError, normalizeApiError } from '../lib/api-errors.js'
 import { EMPTY_RICH_TEXT } from '../lib/rich-text-client.js'
@@ -17,7 +17,7 @@ const EMPTY_FORM = {
   title: '',
   slug: '',
   excerpt: '',
-  categories: [],
+  labels: [],
   content_json: EMPTY_RICH_TEXT,
 }
 
@@ -54,9 +54,10 @@ export default function AdminBlogEditorPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isNew = !id
-  const [loadState, setLoadState] = useState(isNew ? 'ready' : 'loading')
+  const [loadState, setLoadState] = useState('loading')
   const [record, setRecord] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [availableLabels, setAvailableLabels] = useState([])
   const [aliases, setAliases] = useState([])
   const [assetUrls, setAssetUrls] = useState({})
   const [coverUrl, setCoverUrl] = useState('')
@@ -76,18 +77,23 @@ export default function AdminBlogEditorPage() {
   const slugRef = useRef(null)
   const titleErrorId = useId()
   const slugErrorId = useId()
-  const categoriesErrorId = useId()
+  const labelsErrorId = useId()
   const guard = useUnsavedChanges(dirty)
 
   const load = useCallback(async () => {
-    if (!id) return
     setLoadState('loading')
     setMessage('')
     try {
-      const [post, postAliases, assets] = await Promise.all([
+      if (!id) {
+        setAvailableLabels(await api.blogLabels())
+        setLoadState('ready')
+        return
+      }
+      const [post, postAliases, assets, labels] = await Promise.all([
         api.postById(id),
         api.postAliases(id),
         api.contentAssets('post', id),
+        api.blogLabels(),
       ])
       const content = parseContent(post.content_json)
       if (!content) {
@@ -104,9 +110,10 @@ export default function AdminBlogEditorPage() {
         title: post.title || '',
         slug: post.slug || '',
         excerpt: post.excerpt || '',
-        categories: Array.isArray(post.categories) ? post.categories : [],
+        labels: Array.isArray(post.labels) ? post.labels : [],
         content_json: content,
       })
+      setAvailableLabels(labels)
       setAliases(postAliases)
       setAssetUrls(nextUrls)
       setCoverUrl(nextCoverUrl)
@@ -144,11 +151,11 @@ export default function AdminBlogEditorPage() {
     updateForm({ title, ...(!slugTouched && isNew ? { slug: slugify(title) } : {}) })
   }
 
-  function toggleCategory(key) {
-    const categories = form.categories.includes(key)
-      ? form.categories.filter((category) => category !== key)
-      : [...form.categories, key]
-    updateForm({ categories })
+  function toggleLabel(id) {
+    const labels = form.labels.includes(id)
+      ? form.labels.filter((labelId) => labelId !== id)
+      : [...form.labels, id]
+    updateForm({ labels })
   }
 
   async function persistCover(postId, expectedUpdated) {
@@ -169,8 +176,8 @@ export default function AdminBlogEditorPage() {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(form.slug)) {
       errors.slug = 'Adresa smí obsahovat jen malá písmena, číslice a jednotlivé pomlčky.'
     }
-    if (form.categories.length < 1 || form.categories.length > 4) {
-      errors.categories = 'Vyber jednu až čtyři kategorie.'
+    if (form.labels.length < 1) {
+      errors.labels = 'Vyber alespoň jeden label.'
     }
     if (Object.keys(errors).length) {
       setValidationErrors(errors)
@@ -193,7 +200,7 @@ export default function AdminBlogEditorPage() {
         title: form.title,
         slug: form.slug,
         excerpt: form.excerpt,
-        categories: form.categories,
+        labels: form.labels,
         content_json: form.content_json,
         published,
       }
@@ -355,16 +362,17 @@ export default function AdminBlogEditorPage() {
           Perex
           <textarea maxLength="500" value={form.excerpt} onChange={(event) => updateForm({ excerpt: event.target.value })} />
         </label>
-        <fieldset className="admin-fieldset" aria-describedby={validationErrors.categories ? categoriesErrorId : undefined}>
-          <legend>Kategorie (1–4)</legend>
-          {BLOG_CATEGORIES.map(({ key, label }) => (
-            <label className="checkbox-row" key={key}>
-              <input type="checkbox" checked={form.categories.includes(key)} onChange={() => toggleCategory(key)} />
-              {label}
+        <fieldset className="admin-fieldset" aria-describedby={validationErrors.labels ? labelsErrorId : undefined}>
+          <legend>Labels</legend>
+          {availableLabels.map((label) => (
+            <label className="checkbox-row label-choice" key={label.id} style={labelAccent(label)}>
+              <input type="checkbox" checked={form.labels.includes(label.id)} onChange={() => toggleLabel(label.id)} />
+              <span>{label.name}</span>
             </label>
           ))}
+          {availableLabels.length === 0 && <p>Nejdřív vytvoř label v sekci Labels.</p>}
         </fieldset>
-        {validationErrors.categories && <p id={categoriesErrorId} className="field-error">{validationErrors.categories}</p>}
+        {validationErrors.labels && <p id={labelsErrorId} className="field-error">{validationErrors.labels}</p>}
         <fieldset className="admin-fieldset">
           <legend>Titulní obrázek</legend>
           {coverUrl && !removeCover && <img className="admin-cover-preview" src={coverUrl} alt="Aktuální titulní obrázek" />}

@@ -1,32 +1,26 @@
-import { getBlogCategory, isBlogCategoryKey } from '../config/categories.js'
+const LABEL_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const RECORD_ID_PATTERN = /^[a-z0-9]{15}$/
 
-export function parseCategoryQuery(searchParams) {
-  const values = searchParams.getAll('category')
-
-  if (values.length === 0) {
-    return Object.freeze({ state: 'all', key: null, category: null })
+export function parseLabelQuery(searchParams) {
+  const values = searchParams.getAll('label')
+  if (values.length === 0) return Object.freeze({ state: 'all', slug: null })
+  if (
+    values.length !== 1 ||
+    values[0].length > 80 ||
+    !LABEL_SLUG_PATTERN.test(values[0])
+  ) {
+    return Object.freeze({ state: 'invalid', slug: null })
   }
-
-  if (values.length !== 1 || !isBlogCategoryKey(values[0])) {
-    return Object.freeze({ state: 'invalid', key: null, category: null })
-  }
-
-  return Object.freeze({
-    state: 'valid',
-    key: values[0],
-    category: getBlogCategory(values[0]),
-  })
+  return Object.freeze({ state: 'valid', slug: values[0] })
 }
 
-export function publishedPostsFilter(client, categoryKey = null) {
-  if (categoryKey === null) return 'published = true && categories:length > 0'
-
-  if (!isBlogCategoryKey(categoryKey)) {
-    throw new TypeError(`Neplatná kategorie blogu: ${categoryKey}`)
+export function publishedPostsFilter(client, labelId = null) {
+  if (labelId === null) return 'published = true && labels:length > 0'
+  if (!RECORD_ID_PATTERN.test(labelId)) {
+    throw new TypeError(`Neplatné ID labelu blogu: ${labelId}`)
   }
-
   return client.filter(
-    'published = true && categories:length > 0 && categories ~ {:category}',
-    { category: categoryKey },
+    'published = true && labels:length > 0 && labels.id ?= {:label}',
+    { label: labelId },
   )
 }

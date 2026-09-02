@@ -4,9 +4,9 @@ Stav: **PASS** (2026-09-01)
 
 ## Implementováno
 
-- landing page načítá singleton `site_content` a přesně pět pevných `landing_cards`; artwork, vrstvy, navigace a cíle zůstávají code-owned;
-- `/blog` načítá pouze publikované kategorizované články, řadí je podle prvního publikování a vykresluje české category chips;
-- validní category query je před dotazem ověřena proti pevnému registru, neplatná/prázdná/opakovaná hodnota síťový dotaz vůbec nespustí;
+- landing page načítá singleton `site_content` a přesně pět pevných `landing_cards`; artwork a vrstvy zůstávají code-owned, zatímco čtyři blogové karty mohou odkazovat na zvolený existující label;
+- `/blog` načítá pouze publikované články s labels, řadí je podle prvního publikování a vykresluje barevné label chips;
+- validní `?label=<slug>` je před dotazem na články ověřeno proti aktuálním `blog_labels`; neplatná, neznámá, prázdná nebo opakovaná hodnota posts dotaz vůbec nespustí;
 - `/blog/:slug` používá serverový resolver a odlišuje canonical záznam, SPA alias redirect, potvrzenou 404 a unavailable/error;
 - `/gallery` používá publikované serverové pořadí, významné alt texty, caption metadata a role-specific grid/lightbox zdroje;
 - `/o-mne` vyžaduje kompletní singleton, portrét, alt, ověřené rozměry a serverový rich-text cache;
@@ -18,9 +18,12 @@ Stav: **PASS** (2026-09-01)
 - responsive `<img>` markup používá `srcset`, `sizes`, intrinsic rozměry, lazy/eager a article high-priority smlouvu;
 - rich-text obrázky mají kompletní kontrolované width 20–100, align a mobile wrap-collapse CSS.
 
-## Explicitně zdokumentovaný stack blocker
+## Detail relation filtru
 
-PocketBase 0.40.1 na skutečném multi-select poli nevrací membership výsledky pro plánované `categories ?= 'cesty'`. Reprodukce a bezpečný behaviorálně ekvivalentní bound filtr `categories ~ {:category}` jsou popsány v [category-membership-pocketbase-0.40.1.md](./blockers/category-membership-pocketbase-0.40.1.md).
+PocketBase 0.40.1 používá pro membership přes relation ID ověřený bound filtr
+`labels.id ?= {:label}`. Historický problém odstraněného fixed multi-selectu je
+ponechán pouze jako auditní záznam v
+[category-membership-pocketbase-0.40.1.md](./blockers/category-membership-pocketbase-0.40.1.md).
 
 ## Ověření exit condition
 
@@ -32,7 +35,7 @@ PocketBase 0.40.1 na skutečném multi-select poli nevrací membership výsledky
 - skutečný prázdný seznam nezobrazí fixtures ani retry;
 - technická chyba se nezmění na empty/404;
 - missing singleton se klasifikuje jako configuration error;
-- neplatná category zůstává HTTP 200, `noindex,follow`, canonical `/blog` a nespustí posts query;
+- neplatný nebo neznámý label zůstává HTTP 200, `noindex,follow`, canonical `/blog` a nespustí posts query;
 - canonical článek vykresluje pouze serverem odvozený `content_html`;
 - landing error skryje CMS hero/karty a nikdy nevypadá jako úspěšně načtený starý obsah.
 

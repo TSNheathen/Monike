@@ -4,7 +4,7 @@ import { isAllowedHref, normalizeHref, normalizePastedHtml } from '../lib/rich-t
 describe('klientský rich-text kontrakt', () => {
   it('přijímá pouze shodnou sadu odkazů jako server a doplní HTTPS hostnamu', () => {
     expect(normalizeHref('example.com/cesta')).toBe('https://example.com/cesta')
-    expect(normalizeHref('/blog?category=cesty')).toBe('/blog?category=cesty')
+    expect(normalizeHref('/blog?label=cesty')).toBe('/blog?label=cesty')
     expect(isAllowedHref('mailto:monike@example.cz')).toBe(true)
     expect(normalizeHref('//example.com')).toBeNull()
     expect(normalizeHref('javascript:alert(1)')).toBeNull()

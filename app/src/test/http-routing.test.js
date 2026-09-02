@@ -24,7 +24,7 @@ const publishedRecord = {
   excerpt: 'Vzpomínka & cesta <domů>',
   published: true,
   published_at: '2026-08-30 10:00:00.000Z',
-  categories: ['vzpominky'],
+  labels: ['labelvzpom00001'],
   cover_image: 'cover image.jpg',
 }
 

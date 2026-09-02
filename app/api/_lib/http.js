@@ -109,7 +109,7 @@ export function validCanonicalRecord(record, requestedSlug) {
     record.slug === requestedSlug &&
     record.published === true &&
     typeof record.published_at === 'string' && !Number.isNaN(Date.parse(record.published_at)) &&
-    Array.isArray(record.categories) && record.categories.length >= 1,
+    Array.isArray(record.labels) && record.labels.length >= 1,
   )
 }
 

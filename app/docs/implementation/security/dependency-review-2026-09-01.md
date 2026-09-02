@@ -16,7 +16,7 @@ Nález se týká neočekávaného externího přesměrování, pokud aplikace p�
 
 Moniké nepředává uživatelský cíl navigace do těchto API:
 
-- veřejné a admin odkazy jsou code-owned nebo vznikají z pevného registry kategorií;
+- veřejné a admin odkazy jsou code-owned nebo vznikají z validovaných slugů CMS labels;
 - ID záznamů a slugy se vkládají pouze do pevného interního prefixu;
 - alias destination vzniká serverově a route funkce ji přijme pouze proti regexu `/blog/<safe-slug>`;
 - dirty-state guard přijímá jen odkaz, který už browser vyhodnotil jako stejný origin, a používá jeho normalizovaný pathname/search/hash.

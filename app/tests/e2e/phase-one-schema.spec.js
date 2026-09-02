@@ -9,7 +9,7 @@ import {
   TEST_POST,
 } from './support/test-data.mjs'
 
-const categoryKeys = ['cesty', 'vzpominky', 'kocicky-andy', 'proces-tvorby']
+const labelSlugs = ['cesty', 'vzpominky', 'kocicky-andy', 'proces-tvorby']
 
 function field(collection, name) {
   return collection.fields.find((item) => item.name === name)
@@ -21,11 +21,13 @@ test.beforeAll(async () => {
   await resetPocketBaseFixture()
 })
 
-test('má pevné kategorie, indexy, chráněná média a osmihodinový auth token', async () => {
+test('má editovatelné labely, relation, indexy, chráněná média a osmihodinový auth token', async () => {
   const client = await authenticateTestSuperuser()
-  const [admins, posts, gallery, assets] = await Promise.all([
+  const [admins, posts, labels, landingCards, gallery, assets] = await Promise.all([
     client.collections.getOne('admins'),
     client.collections.getOne('posts'),
+    client.collections.getOne('blog_labels'),
+    client.collections.getOne('landing_cards'),
     client.collections.getOne('gallery_images'),
     client.collections.getOne('content_assets'),
   ])
@@ -36,11 +38,16 @@ test('má pevné kategorie, indexy, chráněná média a osmihodinový auth toke
   expect(admins.updateRule).toBeNull()
   expect(field(admins, 'password').min).toBe(16)
 
-  expect(field(posts, 'categories')).toMatchObject({
+  expect(field(posts, 'labels')).toMatchObject({
+    type: 'relation',
     required: true,
-    maxSelect: 4,
-    values: categoryKeys,
+    collectionId: labels.id,
   })
+  expect(field(posts, 'labels').maxSelect).toBeGreaterThan(4)
+  expect(field(posts, 'categories')).toBeUndefined()
+  expect(field(landingCards, 'label')).toMatchObject({ type: 'relation', collectionId: labels.id })
+  expect(field(labels, 'color')).toMatchObject({ required: true, pattern: '^#[0-9A-Fa-f]{6}$' })
+  expect(labels.indexes.join('\n')).toContain('idx_blog_labels_slug')
   expect(field(posts, 'cover_image')).toMatchObject({
     protected: true,
     thumbs: ['480x0', '800x0', '1200x0', '1600x0', '2400x0', '1200x630'],
@@ -65,7 +72,7 @@ test('má pevné kategorie, indexy, chráněná média a osmihodinový auth toke
   expect(gallery.indexes.join('\n')).toContain('idx_gallery_public_order')
 })
 
-test('seeduje právě singletony a pět neměnných slotů', async () => {
+test('seeduje singletony, čtyři výchozí labely a pět neměnných slotů', async () => {
   const guest = await fetch(`${TEST_POCKETBASE_URL}/api/collections/site_content/records`)
   const site = await guest.json()
   expect(guest.status).toBe(200)
@@ -77,7 +84,7 @@ test('seeduje právě singletony a pět neměnných slotů', async () => {
   )
   const cards = await cardsResponse.json()
   expect(cards.items.map((item) => item.slot).sort()).toEqual(
-    ['gallery', ...categoryKeys].sort(),
+    ['gallery', ...labelSlugs].sort(),
   )
   expect(cards.items).toHaveLength(5)
   for (const card of cards.items) {
@@ -85,6 +92,14 @@ test('seeduje právě singletony a pět neměnných slotů', async () => {
     expect(card.image_width).toBe(1024)
     expect(card.image_height).toBe(1536)
   }
+  expect(cards.items.filter((item) => item.label)).toHaveLength(4)
+
+  const labelsResponse = await fetch(
+    `${TEST_POCKETBASE_URL}/api/collections/blog_labels/records?sort=sort_order`,
+  )
+  const labels = await labelsResponse.json()
+  expect(labels.items.map((item) => item.slug)).toEqual(labelSlugs)
+  expect(labels.items.every((item) => /^#[0-9A-F]{6}$/i.test(item.color))).toBe(true)
 
   const aboutResponse = await fetch(
     `${TEST_POCKETBASE_URL}/api/collections/about_page/records`,
@@ -111,7 +126,7 @@ test('nepovolí veřejné zápisy ani neaktivní chráněný soubor', async () =
       body: JSON.stringify({
         title: 'Nepovolený článek',
         slug: 'nepovoleny-clanek',
-        categories: ['cesty'],
+        labels: ['xxxxxxxxxxxxxxx'],
       }),
     },
   )

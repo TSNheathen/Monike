@@ -452,19 +452,19 @@ Target: /gallery
 
 CESTY & PŘÍBĚHY
 Description: Zážitky, příběhy a fotografie z celého světa
-Target: /blog?category=cesty
+Target: /blog?label=cesty
 
 VZPOMÍNKY
 Description: Nezapomenutelné okamžiky, které si nesu srdcem
-Target: /blog?category=vzpominky
+Target: /blog?label=vzpominky
 
 KOČIČKY & ANDY
 Description: Moje chlupaté parťačky a můj papoušek Andy
-Target: /blog?category=kocicky-andy
+Target: /blog?label=kocicky-andy
 
 PROCES TVORBY
 Description: Jak vznikají má díla, inspirace, myšlenky a zákulisí tvorby
-Target: /blog?category=proces-tvorby
+Target: /blog?label=proces-tvorby
 ```
 
 Desktop layout:

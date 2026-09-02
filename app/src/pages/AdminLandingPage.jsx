@@ -13,6 +13,7 @@ export default function AdminLandingPage() {
   const [state, setState] = useState('loading')
   const [site, setSite] = useState(null)
   const [cards, setCards] = useState([])
+  const [labels, setLabels] = useState([])
   const [cardUrls, setCardUrls] = useState({})
   const [cardFiles, setCardFiles] = useState({})
   const [dirtyKeys, setDirtyKeys] = useState(new Set())
@@ -25,7 +26,11 @@ export default function AdminLandingPage() {
   const load = useCallback(async () => {
     setState('loading')
     try {
-      const [siteRecord, cardRecords] = await Promise.all([api.siteContent(), api.landingCards()])
+      const [siteRecord, cardRecords, labelRecords] = await Promise.all([
+        api.siteContent(),
+        api.landingCards(),
+        api.blogLabels(),
+      ])
       const bySlot = new Map(cardRecords.map((card) => [card.slot, card]))
       if (cardRecords.length !== 5 || LANDING_CARD_SLOTS.some(({ slot }) => !bySlot.has(slot))) {
         setState('configuration')
@@ -41,6 +46,7 @@ export default function AdminLandingPage() {
       }
       setSite(siteRecord)
       setCards(ordered)
+      setLabels(labelRecords)
       setCardUrls(Object.fromEntries(ordered.map((card, index) => [card.id, urls[index]])))
       setCardFiles({})
       setDirtyKeys(new Set())
@@ -117,6 +123,7 @@ export default function AdminLandingPage() {
       const data = new FormData()
       data.set('title', card.title)
       data.set('description', card.description)
+      data.set('label', card.label || '')
       if (cardFiles[card.id]) data.set('image', cardFiles[card.id])
       const saved = await api.updateLandingCard(card.id, data)
       setCards((current) => current.map((item) => item.id === card.id ? saved : item))
@@ -174,6 +181,15 @@ export default function AdminLandingPage() {
                   <p className="admin-item__slug">Pevný slot: {card.slot}</p>
                   <label>Název<input required maxLength="100" value={card.title} onChange={(event) => updateCard(card.id, 'title', event.target.value)} /></label>
                   <label>Popis<textarea required maxLength="500" value={card.description} onChange={(event) => updateCard(card.id, 'description', event.target.value)} /></label>
+                  {card.slot !== 'gallery' && (
+                    <label>
+                      Cílový label
+                      <select value={card.label || ''} onChange={(event) => updateCard(card.id, 'label', event.target.value)}>
+                        <option value="">Celý blog</option>
+                        {labels.map((label) => <option key={label.id} value={label.id}>{label.name}</option>)}
+                      </select>
+                    </label>
+                  )}
                   <label>Nahradit obrázek<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => selectCardImage(card.id, event.target.files?.[0])} /></label>
                   <button className="button button--primary" type="button" disabled={!dirtyKeys.has(card.id) || busyKey === card.id} onClick={() => saveCard(card)}>Uložit kartu</button>
                 </div>

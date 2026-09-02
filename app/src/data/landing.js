@@ -1,64 +1,63 @@
-import { getBlogCategory } from '../config/categories.js'
-
-const cesty = getBlogCategory('cesty')
-const vzpominky = getBlogCategory('vzpominky')
-const kocickyAndy = getBlogCategory('kocicky-andy')
-const procesTvorby = getBlogCategory('proces-tvorby')
-
-export const navItems = [
-  { label: 'DOMŮ', href: '/' },
-  { label: 'GALERIE', href: '/gallery' },
-  { label: cesty.label.toLocaleUpperCase('cs-CZ'), href: `/blog?category=${cesty.key}` },
-  { label: 'O MNĚ', href: '/o-mne' },
-  {
-    label: kocickyAndy.label.toLocaleUpperCase('cs-CZ'),
-    href: `/blog?category=${kocickyAndy.key}`,
-  },
-  { label: 'KONTAKT', href: '/kontakt' },
-]
-
 export const LANDING_CARD_SLOTS = Object.freeze([
-  Object.freeze({ slot: 'gallery', href: '/gallery' }),
-  Object.freeze({ slot: cesty.key, href: `/blog?category=${cesty.key}` }),
-  Object.freeze({ slot: vzpominky.key, href: `/blog?category=${vzpominky.key}` }),
-  Object.freeze({ slot: kocickyAndy.key, href: `/blog?category=${kocickyAndy.key}` }),
-  Object.freeze({ slot: procesTvorby.key, href: `/blog?category=${procesTvorby.key}` }),
+  Object.freeze({ slot: 'gallery' }),
+  Object.freeze({ slot: 'cesty' }),
+  Object.freeze({ slot: 'vzpominky' }),
+  Object.freeze({ slot: 'kocicky-andy' }),
+  Object.freeze({ slot: 'proces-tvorby' }),
 ])
+
+export function expandedLabel(record) {
+  const value = record?.expand?.label
+  return Array.isArray(value) ? value[0] || null : value || null
+}
+
+export function landingCardHref(card) {
+  if (card.slot === 'gallery') return '/gallery'
+  const label = expandedLabel(card)
+  return label?.slug ? `/blog?label=${encodeURIComponent(label.slug)}` : '/blog'
+}
+
+export function landingNavigation(cards = []) {
+  const bySlot = new Map(cards.map((card) => [card.slot, card]))
+  return [
+    { label: 'DOMŮ', href: '/' },
+    { label: 'GALERIE', href: '/gallery' },
+    { label: 'CESTY & PŘÍBĚHY', href: landingCardHref(bySlot.get('cesty') || {}) },
+    { label: 'O MNĚ', href: '/o-mne' },
+    { label: 'KOČIČKY & ANDY', href: landingCardHref(bySlot.get('kocicky-andy') || {}) },
+    { label: 'KONTAKT', href: '/kontakt' },
+  ]
+}
 
 export const categoryCards = [
   {
     slot: 'gallery',
     title: 'GALERIE',
     description: 'Obrazy, kresby, portréty, ilustrace a další tvorba',
-    href: '/gallery',
     image: '/assets/landing/card-galerie.png',
   },
   {
-    slot: cesty.key,
-    title: cesty.label.toLocaleUpperCase('cs-CZ'),
+    slot: 'cesty',
+    title: 'CESTY & PŘÍBĚHY',
     description: 'Zážitky, příběhy a fotografie z celého světa',
-    href: `/blog?category=${cesty.key}`,
     image: '/assets/landing/card-cesty-pribehy.png',
   },
   {
-    slot: vzpominky.key,
-    title: vzpominky.label.toLocaleUpperCase('cs-CZ'),
+    slot: 'vzpominky',
+    title: 'VZPOMÍNKY',
     description: 'Nezapomenutelné okamžiky, které si nesu srdcem',
-    href: `/blog?category=${vzpominky.key}`,
     image: '/assets/landing/card-vzpominky.png',
   },
   {
-    slot: kocickyAndy.key,
-    title: kocickyAndy.label.toLocaleUpperCase('cs-CZ'),
+    slot: 'kocicky-andy',
+    title: 'KOČIČKY & ANDY',
     description: 'Moje chlupaté parťačky a můj papoušek Andy',
-    href: `/blog?category=${kocickyAndy.key}`,
     image: '/assets/landing/card-kocicky-andy.png',
   },
   {
-    slot: procesTvorby.key,
-    title: procesTvorby.label.toLocaleUpperCase('cs-CZ'),
+    slot: 'proces-tvorby',
+    title: 'PROCES TVORBY',
     description: 'Jak vznikají má díla, inspirace, myšlenky a zákulisí tvorby',
-    href: `/blog?category=${procesTvorby.key}`,
     image: '/assets/landing/card-proces-tvorby.png',
   },
 ]

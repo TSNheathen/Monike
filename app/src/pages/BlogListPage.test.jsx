@@ -3,8 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BlogListPage from './BlogListPage.jsx'
 
-const content = vi.hoisted(() => ({ loadPosts: vi.fn() }))
-vi.mock('../data/public-content.js', () => ({ loadPosts: content.loadPosts }))
+const content = vi.hoisted(() => ({ loadBlogListing: vi.fn() }))
+vi.mock('../data/public-content.js', () => ({
+  loadBlogListing: content.loadBlogListing,
+  loadLandingNavigation: async () => [],
+}))
 
 function renderPage(url = '/blog') {
   return render(<MemoryRouter initialEntries={[url]}><BlogListPage /></MemoryRouter>)
@@ -15,25 +18,26 @@ const post = {
   title: 'Skutečný článek',
   slug: 'skutecny-clanek',
   excerpt: 'Perex článku.',
-  categories: ['cesty'],
+  labels: ['labelcesty00001'],
+  expand: { labels: [{ id: 'labelcesty00001', name: 'Cesty & příběhy', slug: 'cesty', color: '#B88A36' }] },
   published_at: '2026-09-01 12:00:00.000Z',
 }
 
 describe('veřejný seznam blogu', () => {
-  beforeEach(() => content.loadPosts.mockReset())
+  beforeEach(() => content.loadBlogListing.mockReset())
 
   it('nerenderuje empty před dokončením požadavku', async () => {
     let resolve
-    content.loadPosts.mockReturnValue(new Promise((done) => { resolve = done }))
+    content.loadBlogListing.mockReturnValue(new Promise((done) => { resolve = done }))
     renderPage()
     expect(screen.getByRole('status')).toHaveTextContent('Načítám obsah')
     expect(screen.queryByText('Zatím tu nejsou')).not.toBeInTheDocument()
-    resolve([])
+    resolve({ kind: 'ready', labels: [], selectedLabel: null, posts: [] })
     expect(await screen.findByText('Zatím tu nejsou žádné publikované články.')).toBeInTheDocument()
   })
 
   it('úspěšné prázdné pole zůstává skutečný empty stav bez fixtures', async () => {
-    content.loadPosts.mockResolvedValue([])
+    content.loadBlogListing.mockResolvedValue({ kind: 'ready', labels: [], selectedLabel: null, posts: [] })
     renderPage()
     expect(await screen.findByText('Zatím tu nejsou žádné publikované články.')).toBeInTheDocument()
     expect(screen.queryByText('Skutečný článek')).not.toBeInTheDocument()
@@ -42,30 +46,32 @@ describe('veřejný seznam blogu', () => {
 
   it('technickou chybu nezmění na empty a retry zopakuje stejný read', async () => {
     const user = userEvent.setup()
-    content.loadPosts
+    content.loadBlogListing
       .mockRejectedValueOnce({ status: 503 })
-      .mockResolvedValueOnce([post])
+      .mockResolvedValueOnce({ kind: 'ready', labels: [], selectedLabel: null, posts: [post] })
     renderPage()
     await user.click(await screen.findByRole('button', { name: 'Zkusit znovu' }))
     expect(await screen.findByRole('heading', { name: post.title })).toBeInTheDocument()
-    expect(content.loadPosts).toHaveBeenCalledTimes(2)
+    expect(content.loadBlogListing).toHaveBeenCalledTimes(2)
   })
 
-  it('neplatnou či opakovanou kategorii odmítne bez PocketBase dotazu', async () => {
-    renderPage('/blog?category=cesty&category=vzpominky')
-    expect(await screen.findByRole('heading', { name: 'Tato kategorie neexistuje.' })).toBeInTheDocument()
-    expect(content.loadPosts).not.toHaveBeenCalled()
+  it('neplatný či opakovaný label odmítne bez PocketBase dotazu', async () => {
+    renderPage('/blog?label=cesty&label=vzpominky')
+    expect(await screen.findByRole('heading', { name: 'Tento label neexistuje.' })).toBeInTheDocument()
+    expect(content.loadBlogListing).not.toHaveBeenCalled()
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex,follow')
   })
 
-  it('validní kategorii předá jako pevný klíč a vykreslí její český název', async () => {
-    content.loadPosts.mockResolvedValue([post])
-    renderPage('/blog?category=cesty&utm_source=test')
+  it('validní label resolve dynamicky a vykreslí jeho název i barvu', async () => {
+    const label = post.expand.labels[0]
+    content.loadBlogListing.mockResolvedValue({ kind: 'ready', labels: [label], selectedLabel: label, posts: [post] })
+    renderPage('/blog?label=cesty&utm_source=test')
     expect(await screen.findByRole('heading', { name: 'Skutečný článek' })).toBeInTheDocument()
-    expect(content.loadPosts).toHaveBeenCalledWith('cesty')
+    expect(content.loadBlogListing).toHaveBeenCalledWith('cesty')
+    expect(screen.getAllByRole('link', { name: 'Cesty & příběhy' })[0]).toHaveStyle('--label-color: #B88A36')
     expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute(
       'href',
-      'http://127.0.0.1:5173/blog?category=cesty',
+      'http://127.0.0.1:5173/blog?label=cesty',
     )
   })
 })

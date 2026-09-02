@@ -15,13 +15,18 @@ test('CMS-backed landing, blog, článek, galerie, O mně a Kontakt mají ready 
   const cardSrcset = await page.getByTestId('category-card').first().locator('img').getAttribute('srcset')
   expect(cardSrcset).toContain('thumb=480x0')
   expect(cardSrcset).toContain('thumb=800x0')
+  await expect(page.getByTestId('category-card').nth(1)).toHaveAttribute('href', '/blog?label=cesty')
 
   await page.goto('/blog')
   await expect(page.getByRole('heading', { name: TEST_POST.title })).toBeVisible()
 
-  await page.goto('/blog?category=cesty')
+  await page.goto('/blog?label=cesty')
   await expect(page.getByRole('heading', { name: 'Cesty & příběhy' })).toBeVisible()
   await expect(page.getByRole('heading', { name: TEST_POST.title })).toBeVisible()
+  await expect(page.locator('.label-chips a').filter({ hasText: 'Cesty & příběhy' })).toHaveAttribute(
+    'style',
+    /--label-color: #B88A36/i,
+  )
 
   await page.goto(`/blog/${TEST_POST.slug}`)
   await expect(page.getByText('Testovací obsah z lokálního PocketBase.')).toBeVisible()
@@ -59,18 +64,22 @@ test('nedostupný blog není empty a nabízí explicitní retry', async ({ page 
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,follow')
 })
 
-test('neplatná kategorie nevolá PocketBase, zůstává 200 a noindex', async ({ page }) => {
+test('neplatný label nevolá seznam článků, zůstává 200 a noindex', async ({ page }) => {
   let postRequests = 0
   await page.route('**/api/collections/posts/records**', async (route) => {
     postRequests += 1
     await route.continue()
   })
-  const response = await page.goto('/blog?category=cesty&category=vzpominky')
+  const response = await page.goto('/blog?label=cesty&label=vzpominky')
   expect(response.status()).toBe(200)
-  await expect(page.getByRole('heading', { name: 'Tato kategorie neexistuje.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tento label neexistuje.' })).toBeVisible()
   expect(postRequests).toBe(0)
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,follow')
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'http://127.0.0.1:4173/blog')
+
+  await page.goto('/blog?label=neznamy-label')
+  await expect(page.getByRole('heading', { name: 'Tento label neexistuje.' })).toBeVisible()
+  expect(postRequests).toBe(0)
 })
 
 test('potvrzeně chybějící článek není fixture ani unavailable', async ({ page }) => {

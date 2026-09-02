@@ -36,6 +36,10 @@ export async function resetPocketBaseFixture() {
     verified: true,
   })
 
+  const labels = await client.collection('blog_labels').getFullList({ sort: 'sort_order' })
+  const cesty = labels.find((label) => label.slug === 'cesty')
+  if (!cesty) throw new Error('Seed label cesty chybí.')
+
   const about = await client
     .collection('about_page')
     .getFirstListItem(client.filter('key = {:key}', { key: 'main' }))
@@ -63,7 +67,7 @@ export async function resetPocketBaseFixture() {
 
   await client.collection('posts').create({
     ...TEST_POST,
-    categories: ['cesty'],
+    labels: [cesty.id],
     content_html: '<p>Testovací obsah z lokálního PocketBase.</p>',
     content_json: {
       type: 'doc',

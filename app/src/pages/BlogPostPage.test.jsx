@@ -2,8 +2,11 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import BlogPostPage from './BlogPostPage.jsx'
 
-const content = vi.hoisted(() => ({ loadArticle: vi.fn() }))
-vi.mock('../data/public-content.js', () => ({ loadArticle: content.loadArticle }))
+const content = vi.hoisted(() => ({ loadArticlePage: vi.fn() }))
+vi.mock('../data/public-content.js', () => ({
+  loadArticlePage: content.loadArticlePage,
+  loadLandingNavigation: async () => [],
+}))
 
 function renderPage() {
   return render(
@@ -21,17 +24,18 @@ const record = {
   title: 'Canonical článek',
   slug: 'clanek',
   excerpt: 'Bezpečný perex.',
-  categories: ['cesty'],
+  labels: ['labelcesty00001'],
+  expand: { labels: [{ id: 'labelcesty00001', name: 'Cesty & příběhy', slug: 'cesty', color: '#B88A36' }] },
   published_at: '2026-09-01 12:00:00.000Z',
   content_html: '<p><strong>Serverový obsah</strong></p>',
   cover_image: '',
 }
 
 describe('veřejný detail článku', () => {
-  beforeEach(() => content.loadArticle.mockReset())
+  beforeEach(() => content.loadArticlePage.mockReset())
 
   it('vykreslí pouze canonical serverový záznam a metadata', async () => {
-    content.loadArticle.mockResolvedValue({ kind: 'canonical', record })
+    content.loadArticlePage.mockResolvedValue({ result: { kind: 'canonical', record }, labels: record.expand.labels })
     renderPage()
     expect(await screen.findByText('Serverový obsah')).toBeInTheDocument()
     expect(document.title).toBe('Canonical článek | Moniké')
@@ -39,7 +43,7 @@ describe('veřejný detail článku', () => {
   })
 
   it('historický slug nahradí canonical trasou bez duplicitního článku', async () => {
-    content.loadArticle.mockResolvedValue({ kind: 'alias', location: '/blog/novy' })
+    content.loadArticlePage.mockResolvedValue({ result: { kind: 'alias', location: '/blog/novy' }, labels: [] })
     renderPage()
     expect(await screen.findByText('Nová canonical trasa')).toBeInTheDocument()
     expect(screen.queryByText('Serverový obsah')).not.toBeInTheDocument()

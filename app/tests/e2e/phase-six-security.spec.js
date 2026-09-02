@@ -15,7 +15,7 @@ test('filter-looking slug payloads nikdy nerozšíří article resolver', async 
   for (const payload of [
     "' || published = true",
     'deterministicky\\test',
-    'slug && categories:length > 0',
+    'slug && labels:length > 0',
     'x") || (id != "',
   ]) {
     const response = await fetch(
@@ -79,6 +79,7 @@ test('CORS vrací jen přesný lokální frontend origin', async () => {
 test('server odmítne rich-text XSS struktury a escapuje útočný text', async () => {
   const superuser = await authenticateTestSuperuser()
   await superuser.collection('admins').authWithPassword(TEST_ADMIN.email, TEST_ADMIN.password)
+  const cesty = await superuser.collection('blog_labels').getFirstListItem('slug = "cesty"')
 
   async function save(contentJson, slug) {
     return fetch(`${TEST_POCKETBASE_URL}/api/monike/posts/save`, {
@@ -91,7 +92,7 @@ test('server odmítne rich-text XSS struktury a escapuje útočný text', async 
         title: 'Bezpečnostní test',
         slug,
         excerpt: '',
-        categories: ['cesty'],
+        labels: [cesty.id],
         content_json: contentJson,
         published: true,
       }),
@@ -131,11 +132,12 @@ test('server odmítne rich-text XSS struktury a escapuje útočný text', async 
 
 test('draft/protected soubor je guestovi nedostupný a odpověď není veřejně cacheovatelná', async () => {
   const superuser = await authenticateTestSuperuser()
+  const cesty = await superuser.collection('blog_labels').getFirstListItem('slug = "cesty"')
   const draft = await superuser.collection('posts').create({
     title: 'Soukromý koncept',
     slug: 'soukromy-koncept',
     excerpt: '',
-    categories: ['cesty'],
+    labels: [cesty.id],
     content_json: { type: 'doc', content: [{ type: 'paragraph' }] },
     content_html: '<p></p>',
     published: false,

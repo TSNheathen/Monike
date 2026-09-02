@@ -1,9 +1,8 @@
 import { useEffect, useMemo } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PublicFrame } from '../components/SiteFrame.jsx'
-import { BlogCategoryNavigation, PublicRequestState } from '../components/PublicContent.jsx'
-import { getBlogCategory } from '../config/categories.js'
-import { loadArticle } from '../data/public-content.js'
+import { BlogLabelChips, BlogLabelNavigation, PublicRequestState } from '../components/PublicContent.jsx'
+import { loadArticlePage } from '../data/public-content.js'
 import { usePublicResource } from '../hooks/usePublicResource.js'
 import { usePageMetadata } from '../hooks/usePageMetadata.js'
 import { fileUrl, pb } from '../lib/pocketbase.js'
@@ -30,8 +29,9 @@ function articleCover(post) {
 export default function BlogPostPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const request = usePublicResource(() => loadArticle(slug), [slug])
-  const result = request.state === 'ready' ? request.data : null
+  const request = usePublicResource(() => loadArticlePage(slug), [slug])
+  const result = request.state === 'ready' ? request.data?.result : null
+  const labels = request.state === 'ready' ? request.data?.labels || [] : []
   const post = result?.kind === 'canonical' ? result.record : null
   const cover = post ? articleCover(post) : null
 
@@ -72,14 +72,9 @@ export default function BlogPostPage() {
 
       {post && (
         <article className="article-detail">
-          <BlogCategoryNavigation />
+          <BlogLabelNavigation labels={labels} />
           <p className="content-date">{DATE_FORMAT.format(new Date(post.published_at))}</p>
-          <div className="category-chips" aria-label="Kategorie článku">
-            {(post.categories || []).map((key) => {
-              const category = getBlogCategory(key)
-              return category && <Link key={key} to={`/blog?category=${key}`}>{category.label}</Link>
-            })}
-          </div>
+          <BlogLabelChips labels={post.expand?.labels || []} />
           {cover && <img className="article-cover" alt="" {...cover} />}
           <div className="rich-content" dangerouslySetInnerHTML={{ __html: post.content_html }} />
           <p><Link className="text-link" to="/blog">Všechny články</Link></p>

@@ -9,7 +9,6 @@ const imageValidation =
     ? require(`${__hooks}/lib/image-validation.js`)
     : require('./image-validation.js')
 
-const CATEGORY_KEYS = ['cesty', 'vzpominky', 'kocicky-andy', 'proces-tvorby']
 const ADMIN_COLLECTION = 'admins'
 
 function requireAdmin(e) {
@@ -97,25 +96,26 @@ function normalizeSlug(value) {
   return slug
 }
 
-function normalizeCategories(value) {
-  if (!Array.isArray(value)) {
-    fieldError('categories', 'Vyberte alespoň jednu kategorii.', 'invalid_categories')
+function normalizeLabels(app, value) {
+  if (!Array.isArray(value) || value.length < 1) {
+    fieldError('labels', 'Vyberte alespoň jeden label.', 'invalid_labels')
   }
   const unique = []
-  for (const key of CATEGORY_KEYS) {
-    if (value.includes(key) && !unique.includes(key)) unique.push(key)
+  for (const id of value) {
+    if (typeof id !== 'string' || !/^[a-z0-9]{15}$/.test(id)) {
+      fieldError('labels', 'Výběr obsahuje neplatný label.', 'invalid_labels')
+    }
+    if (!unique.includes(id)) unique.push(id)
   }
-  if (
-    unique.length < 1 ||
-    unique.length > 4 ||
-    value.some((key) => !CATEGORY_KEYS.includes(key))
-  ) {
-    fieldError('categories', 'Vyberte jednu až čtyři platné kategorie.', 'invalid_categories')
+  try {
+    for (const id of unique) app.findRecordById('blog_labels', id)
+  } catch {
+    fieldError('labels', 'Výběr obsahuje neexistující label.', 'invalid_labels')
   }
   return unique
 }
 
-function validatePostInput(body) {
+function validatePostInput(app, body) {
   const title = typeof body.title === 'string' ? body.title.trim() : ''
   if (!title || title.length > 160) {
     fieldError('title', 'Název je povinný a smí mít nejvýše 160 znaků.')
@@ -137,7 +137,7 @@ function validatePostInput(body) {
     title,
     excerpt,
     slug: normalizeSlug(body.slug),
-    categories: normalizeCategories(body.categories),
+    labels: normalizeLabels(app, body.labels),
     contentJson: body.content_json,
     validation,
     published: body.published === true,
@@ -368,6 +368,7 @@ function responseForPost(record) {
     published: record.getBool('published'),
     published_at: record.getString('published_at'),
     content_html: record.getString('content_html'),
+    labels: record.getStringSlice('labels'),
   }
 }
 
@@ -430,7 +431,7 @@ function stageContentAsset(e) {
 function savePost(e) {
   requireAdmin(e)
   const body = bodyFrom(e)
-  const input = validatePostInput(body)
+  const input = validatePostInput(e.app, body)
   const failAfterParentSave = forcedTestFailure(e, 'post-after-parent-save')
   let saved
 
@@ -450,7 +451,7 @@ function savePost(e) {
     record.set('title', input.title)
     record.set('slug', input.slug)
     record.set('excerpt', input.excerpt)
-    record.set('categories', input.categories)
+    record.set('labels', input.labels)
     record.set('content_json', input.contentJson)
     record.set('content_html', html)
     record.set('published', input.published)
@@ -582,15 +583,20 @@ function resolveArticle(e) {
   if (
     current &&
     current.getBool('published') &&
-    current.getStringSlice('categories').length > 0
+    current.getStringSlice('labels').length > 0
   ) {
-    return e.json(200, { kind: 'canonical', record: current.publicExport() })
+    const exported = current.publicExport()
+    exported.expand = {
+      labels: current.getStringSlice('labels').map((id) =>
+        e.app.findRecordById('blog_labels', id).publicExport()),
+    }
+    return e.json(200, { kind: 'canonical', record: exported })
   }
 
   const alias = optionalRecordByData(e.app, 'post_slug_aliases', 'slug', slug)
   if (alias) {
     const post = e.app.findRecordById('posts', alias.getString('post'))
-    if (post.getBool('published') && post.getStringSlice('categories').length > 0) {
+    if (post.getBool('published') && post.getStringSlice('labels').length > 0) {
       return e.json(200, {
         kind: 'alias',
         location: `/blog/${post.getString('slug')}`,
@@ -599,6 +605,34 @@ function resolveArticle(e) {
   }
 
   throw new NotFoundError('Článek nebyl nalezen.')
+}
+
+function assertLabelUnused(app, id) {
+  const posts = allRecordsByFilter(app, 'posts', 'labels.id ?= {:label}', { label: id })
+  const cards = allRecordsByFilter(app, 'landing_cards', 'label = {:label}', { label: id })
+  if (posts.length || cards.length) {
+    throw new ApiError(
+      409,
+      'Label je stále používaný. Nejdřív ho odeberte nebo nahraďte u článků a landing karet.',
+      { code: 'label_in_use', posts: posts.length, landingCards: cards.length },
+    )
+  }
+}
+
+function deleteLabel(e) {
+  requireAdmin(e)
+  const id = e.request.pathValue('id')
+  e.app.runInTransaction((tx) => {
+    const label = tx.findRecordById('blog_labels', id)
+    assertLabelUnused(tx, label.id)
+    tx.delete(label)
+  })
+  return e.json(200, { deleted: true })
+}
+
+function validateLabelDelete(e) {
+  assertLabelUnused(e.app, e.record.id)
+  return e.next()
 }
 
 function containsAssetReference(value, assetId) {
@@ -653,6 +687,7 @@ function cleanupInactiveAssets(app, now) {
 module.exports = {
   assignGalleryOrder,
   cleanupInactiveAssets,
+  deleteLabel,
   deletePost,
   reorderGallery,
   resolveArticle,
@@ -663,4 +698,5 @@ module.exports = {
   validateAssetOwner,
   validateCmsImageRequest,
   validateGalleryPublication,
+  validateLabelDelete,
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AdminFrame } from '../components/SiteFrame.jsx'
 import { StatePanel, StatusBadge } from '../components/AsyncState.jsx'
-import { BLOG_CATEGORIES } from '../config/categories.js'
+import { labelAccent } from '../components/PublicContent.jsx'
 import { normalizeApiError } from '../lib/api-errors.js'
 import { api } from '../lib/pocketbase.js'
 
@@ -52,10 +52,7 @@ export default function AdminBlogPage() {
         <div className="admin-table">
           {outcome.posts.map((post) => {
             const status = postStatus(post)
-            const categoryLabels = BLOG_CATEGORIES
-              .filter(({ key }) => post.categories?.includes(key))
-              .map(({ label }) => label)
-              .join(', ')
+            const labels = post.expand?.labels || []
             return (
               <article key={post.id}>
                 <div>
@@ -64,7 +61,11 @@ export default function AdminBlogPage() {
                     <span>{post.published_at ? DATE_FORMATTER.format(new Date(post.published_at)) : 'Bez data publikace'}</span>
                   </div>
                   <h2>{post.title}</h2>
-                  <p>{categoryLabels}</p>
+                  <div className="admin-label-chips" aria-label="Labely článku">
+                    {labels.map((label) => (
+                      <span key={label.id} style={labelAccent(label)}>{label.name}</span>
+                    ))}
+                  </div>
                   <p className="admin-item__slug">/blog/{post.slug}</p>
                 </div>
                 <Link className="button button--secondary" to={`/admin/blog/${post.id}/edit`}>Upravit</Link>

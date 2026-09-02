@@ -15,10 +15,10 @@ vi.mock('./data/public-content.js', () => ({
     },
     cards: [
       ['gallery', 'GALERIE', '/gallery'],
-      ['cesty', 'CESTY & PŘÍBĚHY', '/blog?category=cesty'],
-      ['vzpominky', 'VZPOMÍNKY', '/blog?category=vzpominky'],
-      ['kocicky-andy', 'KOČIČKY & ANDY', '/blog?category=kocicky-andy'],
-      ['proces-tvorby', 'PROCES TVORBY', '/blog?category=proces-tvorby'],
+      ['cesty', 'CESTY & PŘÍBĚHY', '/blog?label=cesty'],
+      ['vzpominky', 'VZPOMÍNKY', '/blog?label=vzpominky'],
+      ['kocicky-andy', 'KOČIČKY & ANDY', '/blog?label=kocicky-andy'],
+      ['proces-tvorby', 'PROCES TVORBY', '/blog?label=proces-tvorby'],
     ].map(([slot, title, href]) => ({
       id: slot,
       slot,
@@ -28,6 +28,9 @@ vi.mock('./data/public-content.js', () => ({
       image: '/assets/landing/card-galerie.png',
       image_width: 1024,
       image_height: 1536,
+      expand: slot === 'gallery' ? {} : {
+        label: { id: `label-${slot}`, name: title, slug: slot, color: '#B88A36' },
+      },
     })),
   }),
 }))

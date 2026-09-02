@@ -1,6 +1,10 @@
-# PocketBase 0.40.1 multi-select membership
+# PocketBase 0.40.1 historický multi-select membership
 
-Stav: **reprodukovatelný implementační blocker smluveného operátoru; behaviorální kontrakt zachován**
+> Stav od 2026-09-02: **nahrazeno** editovatelnými `blog_labels` a relation polem
+> `posts.labels`. Tento dokument zůstává pouze jako auditní záznam odstraněné
+> implementace. Aktuální relation filtr používá `labels.id ?= {:label}`.
+
+Původní stav: **reprodukovatelný implementační blocker smluveného operátoru; behaviorální kontrakt zachován**
 
 Issue #6 zapisuje očekávaný validní filter jako:
 

@@ -16,10 +16,10 @@ Praktický accessibility scope je splněný automatickými a browserovými kontr
 
 ## Aktuální green gate
 
-- `npm test`: 23 souborů / 80 testů PASS.
+- `npm test`: 22 souborů / 78 testů PASS.
 - `npm run build`: PASS.
 - `npm run test:migrations`: fresh i upgrade PASS.
-- `npm run test:e2e`: 40/40 PASS.
+- `npm run test:e2e`: 42/42 PASS.
 - Docker/PocketBase integrační smoke z Phase 7: fresh bootstrap, migrace, readiness, runtime UID a nastavení PASS.
 
 Známý nezávadný výstup je pouze React Router v7 future-flag upozornění.

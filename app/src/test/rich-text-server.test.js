@@ -31,7 +31,7 @@ describe('serverový rich-text kontrakt', () => {
             text(' a '),
             text('odkaz', [
               { type: 'italic' },
-              { type: 'link', attrs: { href: '/blog?category=cesty' } },
+              { type: 'link', attrs: { href: '/blog?label=cesty' } },
             ]),
             { type: 'hardBreak' },
             text('<bezpečně>'),
@@ -95,7 +95,7 @@ describe('serverový rich-text kontrakt', () => {
 
     expect(html).toContain('<h2>Nadpis &amp; cesta</h2>')
     expect(html).toContain('<strong>Silně</strong>')
-    expect(html).toContain('<a href="/blog?category=cesty"><em>odkaz</em></a>')
+    expect(html).toContain('<a href="/blog?label=cesty"><em>odkaz</em></a>')
     expect(html).toContain('&lt;bezpečně&gt;')
     expect(html).toContain('<ul><li><p>První</p><ol>')
     expect(html).toContain('<blockquote><p>Citace</p></blockquote>')
@@ -166,7 +166,7 @@ describe('serverový rich-text kontrakt', () => {
       'http://localhost:8090/test',
       'mailto:monike@example.com',
       '/gallery',
-      '/blog?category=cesty',
+      '/blog?label=cesty',
     ]) {
       expect(validateHref(href)).toBe(true)
     }

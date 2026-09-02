@@ -119,7 +119,7 @@ test('zachová lokální obsah při vypršení přihlášení i konfliktu', asyn
       title: post.title,
       slug: post.slug,
       excerpt: 'Změna z druhé karty.',
-      categories: post.categories,
+      labels: post.labels,
       content_json: post.content_json,
       published: post.published,
     },
@@ -128,6 +128,45 @@ test('zachová lokální obsah při vypršení přihlášení i konfliktu', asyn
   await page.getByRole('button', { name: 'Uložit změny' }).click()
   await expect(page.getByText(/mezitím změněn v jiné kartě/)).toBeVisible()
   await expect(page.getByLabel('Perex')).toHaveValue('Lokální změna, která se nesmí ztratit.')
+})
+
+test('spravuje labely a bezpečně blokuje smazání použitého labelu', async ({ page }) => {
+  await loginAsTestAdmin(page)
+  await page.getByRole('link', { name: 'Labels', exact: true }).click()
+
+  await page.getByLabel('Název nového labelu').fill('Novinky')
+  await expect(page.getByLabel('Slug nového labelu')).toHaveValue('novinky')
+  await page.getByLabel('HEX barva nového labelu').fill('#123456')
+  await page.getByLabel('Pořadí nového labelu').fill('5')
+  await page.getByRole('button', { name: 'Vytvořit label' }).click()
+  await expect(page.getByText('Label je vytvořený.')).toBeVisible()
+
+  let card = page.getByRole('article').filter({ hasText: 'Novinky' })
+  await card.getByLabel('Název labelu Novinky').fill('Ze zákulisí')
+  card = page.getByRole('article').filter({ hasText: 'Ze zákulisí' })
+  await card.getByLabel('Slug labelu Ze zákulisí').fill('ze-zakulisi')
+  await card.getByLabel('HEX barva labelu Ze zákulisí').fill('#C05A7A')
+  await card.getByLabel('Pořadí labelu Ze zákulisí').fill('6')
+  await card.getByRole('button', { name: 'Uložit' }).click()
+  await expect(page.getByText('Label „Ze zákulisí“ je uložený.')).toBeVisible()
+
+  const admin = await authenticateTestAdmin()
+  const saved = await admin.collection('blog_labels').getFirstListItem('slug = "ze-zakulisi"')
+  expect(saved).toMatchObject({ name: 'Ze zákulisí', color: '#C05A7A', sort_order: 6 })
+
+  const used = page.getByRole('article').filter({ hasText: 'Cesty & příběhy' })
+  await used.getByRole('button', { name: 'Smazat' }).click()
+  let dialog = page.getByRole('dialog', { name: 'Trvale smazat label?' })
+  await dialog.getByRole('button', { name: 'Trvale smazat' }).click()
+  await expect(dialog.getByText(/Label se stále používá/)).toBeVisible()
+  await dialog.getByRole('button', { name: 'Zrušit' }).click()
+
+  card = page.getByRole('article').filter({ hasText: 'Ze zákulisí' })
+  await card.getByRole('button', { name: 'Smazat' }).click()
+  dialog = page.getByRole('dialog', { name: 'Trvale smazat label?' })
+  await dialog.getByRole('button', { name: 'Trvale smazat' }).click()
+  await expect(page.getByText('Label „Ze zákulisí“ je smazaný.')).toBeVisible()
+  await expect(page.getByRole('article').filter({ hasText: 'Ze zákulisí' })).toHaveCount(0)
 })
 
 test('spravuje galerii i všechny pevné sekce a admin nemá axe porušení', async ({ page }) => {
@@ -153,6 +192,15 @@ test('spravuje galerii i všechny pevné sekce a admin nemá axe porušení', as
   await page.getByLabel('Podtitulek').fill('Nový podtitulek Moniké')
   await page.getByRole('button', { name: 'Uložit úvodní texty' }).click()
   await expect(page.getByText('Texty úvodní stránky jsou uložené.')).toBeVisible()
+  let cestyCard = page.getByRole('article').filter({ hasText: 'Pevný slot: cesty' })
+  await cestyCard.getByLabel('Cílový label').selectOption({ label: 'Vzpomínky' })
+  await cestyCard.getByRole('button', { name: 'Uložit kartu' }).click()
+  await page.goto('/')
+  await expect(page.getByTestId('category-card').nth(1)).toHaveAttribute('href', '/blog?label=vzpominky')
+  await page.goto('/admin/web/landing')
+  cestyCard = page.getByRole('article').filter({ hasText: 'Pevný slot: cesty' })
+  await cestyCard.getByLabel('Cílový label').selectOption({ label: 'Cesty & příběhy' })
+  await cestyCard.getByRole('button', { name: 'Uložit kartu' }).click()
 
   await page.goto('/admin/web/kontakt')
   await page.getByLabel('Úvodní text').fill('Napiš mi kvůli tvorbě nebo cestám.')

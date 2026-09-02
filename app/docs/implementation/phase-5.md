@@ -10,7 +10,7 @@ Stav: **PASS** (2026-09-01)
 - Historický slug vrací HTTP 308 s absolutním `Location`; potvrzeně chybějící nebo neveřejný článek vrací HTTP 404.
 - Síťová chyba, timeout, neplatná nebo nejednoznačná odpověď resolveru vrací HTTP 503, `Cache-Control: no-store` a `Retry-After: 60`; technická chyba se nikdy nevydává za 404.
 - Neznámá pathname nemá SPA rewrite a končí skutečným HTTP 404; samostatné české `404.html` a `503.html` respektují vizuál Moniké a obsahují skutečný HTML text.
-- Produkční `/sitemap.xml` obsahuje pouze známé veřejné code routes a canonical publikované kategorizované články. Dotaz je stránkovaný, výsledek má hodinovou CDN cache a backend failure vrací 503.
+- Produkční `/sitemap.xml` obsahuje pouze známé veřejné code routes a canonical publikované články s alespoň jedním labelem. Dotaz je stránkovaný, výsledek má hodinovou CDN cache a backend failure vrací 503.
 - Produkční `robots.txt` povoluje public a zakazuje `/admin/`. Demo blokuje crawling, nemá veřejnou sitemap a globální Routing Middleware přidává `X-Robots-Tag: noindex,nofollow`.
 - Vite zapisuje robots meta už při buildu: production `index,follow`, demo/test `noindex,nofollow`.
 

@@ -1,12 +1,20 @@
 import { DEV_FIXTURES_ENABLED } from '../../config/environment.js'
 import { categoryCards } from '../../data/landing.js'
 
+const blogLabels = Object.freeze([
+  Object.freeze({ id: 'labelcesty00001', name: 'Cesty & příběhy', slug: 'cesty', color: '#B88A36', sort_order: 10 }),
+  Object.freeze({ id: 'labelvzpom00001', name: 'Vzpomínky', slug: 'vzpominky', color: '#9D6B53', sort_order: 20 }),
+  Object.freeze({ id: 'labelkocky00001', name: 'Kočičky & Andy', slug: 'kocicky-andy', color: '#7D8C72', sort_order: 30 }),
+  Object.freeze({ id: 'labelproces0001', name: 'Proces tvorby', slug: 'proces-tvorby', color: '#806B9B', sort_order: 40 }),
+])
+
 const posts = Object.freeze([
   Object.freeze({
     id: 'demo-cesty',
     title: 'První zápisky z cest',
     slug: 'prvni-zapisky-z-cest',
-    categories: ['cesty'],
+    labels: [blogLabels[0].id],
+    expand: { labels: [blogLabels[0]] },
     excerpt: 'Krátké ohlédnutí za místy, která ve mně zůstala.',
     published_at: '2026-06-10',
     content_html:
@@ -41,15 +49,20 @@ const siteContent = Object.freeze({
 })
 
 const landingCards = Object.freeze(
-  categoryCards.map((card) => Object.freeze({
-    id: `dev-${card.slot}`,
-    slot: card.slot,
-    title: card.title,
-    description: card.description,
-    image: card.image,
-    image_width: 1024,
-    image_height: 1536,
-  })),
+  categoryCards.map((card) => {
+    const label = blogLabels.find((item) => item.slug === card.slot) || null
+    return Object.freeze({
+      id: `dev-${card.slot}`,
+      slot: card.slot,
+      title: card.title,
+      description: card.description,
+      image: card.image,
+      image_width: 1024,
+      image_height: 1536,
+      label: label?.id || '',
+      expand: label ? { label } : {},
+    })
+  }),
 )
 
 const aboutPage = Object.freeze({
@@ -66,6 +79,7 @@ const aboutPage = Object.freeze({
 export const devContentFixtures = Object.freeze({
   enabled: DEV_FIXTURES_ENABLED,
   posts: DEV_FIXTURES_ENABLED ? posts : Object.freeze([]),
+  blogLabels: DEV_FIXTURES_ENABLED ? blogLabels : Object.freeze([]),
   gallery: DEV_FIXTURES_ENABLED ? gallery : Object.freeze([]),
   siteContent: DEV_FIXTURES_ENABLED ? siteContent : null,
   landingCards: DEV_FIXTURES_ENABLED ? landingCards : Object.freeze([]),

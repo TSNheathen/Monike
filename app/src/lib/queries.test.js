@@ -1,34 +1,33 @@
-import { parseCategoryQuery, publishedPostsFilter } from './queries.js'
+import { parseLabelQuery, publishedPostsFilter } from './queries.js'
 
-describe('bezpečný filtr kategorií', () => {
-  it('přijme právě jeden známý klíč', () => {
-    expect(parseCategoryQuery(new URLSearchParams('category=cesty'))).toMatchObject({
+describe('bezpečný filtr labelů', () => {
+  it('přijme právě jeden syntakticky platný slug', () => {
+    expect(parseLabelQuery(new URLSearchParams('label=cesty'))).toEqual({
       state: 'valid',
-      key: 'cesty',
-      category: { label: 'Cesty & příběhy' },
+      slug: 'cesty',
     })
-    expect(parseCategoryQuery(new URLSearchParams()).state).toBe('all')
+    expect(parseLabelQuery(new URLSearchParams()).state).toBe('all')
   })
 
   it('odmítne prázdnou, opakovanou a injekční hodnotu před sestavením filtru', () => {
-    expect(parseCategoryQuery(new URLSearchParams('category=')).state).toBe('invalid')
-    expect(parseCategoryQuery(new URLSearchParams('category=cesty&category=vzpominky')).state).toBe('invalid')
-    expect(parseCategoryQuery(new URLSearchParams('category=cesty%22%20%7C%7C%20published%3Dtrue')).state).toBe('invalid')
+    expect(parseLabelQuery(new URLSearchParams('label=')).state).toBe('invalid')
+    expect(parseLabelQuery(new URLSearchParams('label=cesty&label=vzpominky')).state).toBe('invalid')
+    expect(parseLabelQuery(new URLSearchParams('label=cesty%22%20%7C%7C%20published%3Dtrue')).state).toBe('invalid')
 
     const client = { filter: vi.fn() }
-    expect(() => publishedPostsFilter(client, 'cesty || published=true')).toThrow('Neplatná kategorie')
+    expect(() => publishedPostsFilter(client, 'cesty || published=true')).toThrow('Neplatné ID labelu')
     expect(client.filter).not.toHaveBeenCalled()
   })
 
-  it('předává důvěryhodný klíč přes parametr PocketBase filtru', () => {
+  it('předává důvěryhodné relation ID přes parametr PocketBase filtru', () => {
     const client = {
-      filter: vi.fn((expression, params) => `${expression}:${params.category}`),
+      filter: vi.fn((expression, params) => `${expression}:${params.label}`),
     }
-    const filter = publishedPostsFilter(client, 'vzpominky')
-    expect(filter).toContain('{:category}:vzpominky')
+    const filter = publishedPostsFilter(client, 'abc123def456ghi')
+    expect(filter).toContain('{:label}:abc123def456ghi')
     expect(client.filter).toHaveBeenCalledWith(
-      expect.stringContaining('categories ~ {:category}'),
-      { category: 'vzpominky' },
+      expect.stringContaining('labels.id ?= {:label}'),
+      { label: 'abc123def456ghi' },
     )
   })
 })

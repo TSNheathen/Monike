@@ -52,6 +52,11 @@ async function stageAsset(token, parentType, parentId, overrides = {}) {
   return call(token, '/api/monike/content-assets/stage', { body: form })
 }
 
+async function labelIds(client) {
+  const labels = await client.collection('blog_labels').getFullList()
+  return Object.fromEntries(labels.map((label) => [label.slug, label.id]))
+}
+
 test.describe.configure({ mode: 'serial' })
 
 test.beforeAll(async () => {
@@ -70,7 +75,7 @@ test('vynucuje admins identitu a serverové vlastnictví assetů', async () => {
     title: post.title,
     slug: post.slug,
     excerpt: post.excerpt,
-    categories: ['cesty'],
+    labels: post.labels,
     content_json: paragraph('Obsah'),
     published: true,
   }
@@ -101,7 +106,7 @@ test('vynucuje admins identitu a serverové vlastnictví assetů', async () => {
     admin.collection('posts').create({
       title: 'Obejití transakce',
       slug: 'obejiti-transakce',
-      categories: ['cesty'],
+      labels: post.labels,
     }),
   ).rejects.toMatchObject({ status: 403 })
   await expect(
@@ -190,13 +195,14 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
     .collection('posts')
     .getFirstListItem(superuser.filter('slug = {:slug}', { slug: TEST_POST.slug }))
   const originalSlug = post.slug
+  const labelBySlug = await labelIds(superuser)
 
   const secondResult = await call(admin.authStore.token, '/api/monike/posts/save', {
     body: {
       title: 'Druhý koncept',
       slug: 'druhy-koncept',
       excerpt: '',
-      categories: ['vzpominky'],
+      labels: [labelBySlug.vzpominky],
       content_json: paragraph(''),
       published: false,
     },
@@ -233,7 +239,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: post.title,
       slug: changedSlug,
       excerpt: post.excerpt,
-      categories: ['cesty', 'proces-tvorby'],
+      labels: [labelBySlug.cesty, labelBySlug['proces-tvorby']],
       content_json: content,
       content_html: '<script>nedůvěryhodné</script>',
       published: true,
@@ -244,6 +250,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
   expect(saved.data.record.content_html).toContain('&lt;bezpečný text&gt;')
   expect(saved.data.record.content_html).not.toContain('<script')
   expect(saved.data.record.published_at).toBe(post.published_at)
+  expect(saved.data.record.labels).toEqual([labelBySlug.cesty, labelBySlug['proces-tvorby']])
   expect((await superuser.collection('content_assets').getOne(firstAsset.data.record.id)).active).toBe(true)
 
   let aliases = await superuser.collection('post_slug_aliases').getFullList()
@@ -251,6 +258,10 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
   let resolved = await call('', `/api/monike/articles/${changedSlug}`, { method: 'GET' })
   expect(resolved.response.status).toBe(200)
   expect(resolved.data.kind).toBe('canonical')
+  expect(resolved.data.record.expand.labels.map((label) => label.slug)).toEqual([
+    'cesty',
+    'proces-tvorby',
+  ])
   resolved = await call('', `/api/monike/articles/${originalSlug}`, { method: 'GET' })
   expect(resolved.data).toEqual({ kind: 'alias', location: `/blog/${changedSlug}` })
   expect((await call('', '/api/monike/articles/neexistuje', { method: 'GET' })).response.status).toBe(404)
@@ -268,7 +279,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: 'Tento název se musí vrátit zpět',
       slug: 'docasny-slug-k-rollbacku',
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: content,
       published: true,
     },
@@ -289,7 +300,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: content,
       published: false,
     },
@@ -311,7 +322,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: content,
       published: true,
     },
@@ -327,7 +338,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: 'Tento název se nesmí uložit',
       slug: post.slug,
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: {
         type: 'doc',
         content: [
@@ -356,7 +367,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: post.title,
       slug: 'druhy-koncept',
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: content,
       published: true,
     },
@@ -371,7 +382,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: post.title,
       slug: originalSlug,
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: content,
       published: true,
     },
@@ -388,7 +399,7 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
       title: 'Zastaralý zápis',
       slug: originalSlug,
       excerpt: post.excerpt,
-      categories: post.categories,
+      labels: post.labels,
       content_json: content,
       published: true,
     },
@@ -423,6 +434,43 @@ test('uloží celý článek atomicky, spravuje historii slugů a resolver', asy
   expect(
     (await call('', `/api/monike/articles/${originalSlug}`, { method: 'GET' })).response.status,
   ).toBe(404)
+})
+
+test('vynucuje unique slug a blokuje smazání použitého labelu', async () => {
+  const admin = await authenticateTestAdmin()
+  const superuser = await authenticateTestSuperuser()
+  const created = await admin.collection('blog_labels').create({
+    name: 'Dočasný label',
+    slug: 'docasny-label',
+    color: '#123ABC',
+    sort_order: 90,
+  })
+  expect(created).toMatchObject({ color: '#123ABC', sort_order: 90 })
+
+  await expect(admin.collection('blog_labels').create({
+    name: 'Duplicitní slug',
+    slug: 'docasny-label',
+    color: '#654321',
+    sort_order: 91,
+  })).rejects.toMatchObject({ status: 400 })
+
+  const cesty = await superuser.collection('blog_labels').getFirstListItem('slug = "cesty"')
+  const blocked = await call(admin.authStore.token, `/api/monike/labels/${cesty.id}/delete`, {
+    body: {},
+  })
+  expect(blocked.response.status).toBe(409)
+  expect(blocked.data.message).toMatch(/Label je stále používaný/)
+  await expect(admin.collection('blog_labels').delete(cesty.id)).rejects.toMatchObject({
+    status: 409,
+  })
+
+  const deleted = await call(admin.authStore.token, `/api/monike/labels/${created.id}/delete`, {
+    body: {},
+  })
+  expect(deleted.response.status).toBe(200)
+  await expect(superuser.collection('blog_labels').getOne(created.id)).rejects.toMatchObject({
+    status: 404,
+  })
 })
 
 test('uloží About assety a pořadí galerie bez částečného commitu', async () => {

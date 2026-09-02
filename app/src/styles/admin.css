@@ -62,6 +62,17 @@
 .admin-gallery-preview { display: block; width: min(100%, 560px); max-height: 640px; object-fit: contain; border: 1px solid var(--color-border-subtle); background: var(--color-ink-950); }
 .admin-about-portrait { display: block; width: min(100%, 420px); height: auto; border: 1px solid var(--color-border-subtle); }
 .admin-aliases { color: var(--color-text-muted); font-family: var(--font-control); }
+.label-choice span,
+.admin-label-chip,
+.admin-label-chips span { display: inline-flex; align-items: center; min-height: 30px; padding: 5px 9px; color: var(--color-ivory); border: 1px solid var(--label-color, var(--color-gold-300)); border-radius: var(--radius-small); background: color-mix(in srgb, var(--label-color, var(--color-gold-300)) 20%, transparent); font: 650 0.78rem/1.2 var(--font-control); }
+.label-choice span { min-height: 34px; }
+.admin-label-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-block: 10px; }
+.admin-label-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+.admin-label-card { align-content: start; }
+.admin-label-fields { max-width: none; }
+.admin-label-color-fields { display: grid; grid-template-columns: minmax(90px, 0.35fr) minmax(160px, 1fr); gap: 12px; }
+.admin-label-color-fields input[type='color'] { min-height: 48px; padding: 5px; }
+.admin-label-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .field-help { color: var(--color-text-muted); font: 0.84rem/1.5 var(--font-control); }
 .field-error { margin: -8px 0 0; color: var(--color-danger); font: 700 0.86rem/1.45 var(--font-control); }
 .admin-static-stack,
