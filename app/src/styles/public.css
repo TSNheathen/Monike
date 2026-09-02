@@ -191,7 +191,7 @@
   position: relative;
   isolation: isolate;
   display: flex;
-  min-height: 190px;
+  min-height: 317px;
   overflow: hidden;
   flex-direction: column;
   justify-content: end;
@@ -305,6 +305,10 @@
 .contact-list { display: grid; gap: 12px; padding: 0; margin: 28px 0 0; list-style: none; }
 .contact-list a { display: flex; min-height: 52px; align-items: center; gap: 14px; padding: 12px 16px; color: var(--color-gold-300); border: 1px solid var(--color-border-control); font-family: var(--font-control); text-decoration: none; }
 .contact-list a:hover { color: var(--color-ivory); border-color: var(--color-gold-300); }
+
+@media (min-width: 760px) {
+  .landing-page { min-height: max(100svh, 960px); }
+}
 
 @media (max-width: 1099px) {
   .top-logo { width: 124px; }
