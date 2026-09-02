@@ -19,7 +19,7 @@ export function resolveEnvironment({ mode, appEnvironment, devFixtures }) {
     throw new Error(`Neznámé prostředí Moniké: ${name}`)
   }
 
-  const useDevFixtures = parseBoolean(devFixtures, name === 'development')
+  const useDevFixtures = parseBoolean(devFixtures, false)
 
   if (useDevFixtures && name !== 'development') {
     throw new Error(

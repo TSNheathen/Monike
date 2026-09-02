@@ -1,4 +1,6 @@
-export const TEST_POCKETBASE_URL = 'http://127.0.0.1:8090'
+const pocketBaseHttp = process.env.MONIKE_E2E_POCKETBASE_HTTP || '127.0.0.1:8090'
+
+export const TEST_POCKETBASE_URL = `http://${pocketBaseHttp}`
 
 export const TEST_SUPERUSER = Object.freeze({
   email: 'superuser@monike.test',

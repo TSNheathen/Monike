@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const pocketBaseUrl = 'http://127.0.0.1:8090'
+const pocketBaseHttp = process.env.MONIKE_E2E_POCKETBASE_HTTP || '127.0.0.1:8090'
+const pocketBaseUrl = `http://${pocketBaseHttp}`
 const appUrl = 'http://127.0.0.1:4173'
 
 export default defineConfig({
@@ -21,6 +22,10 @@ export default defineConfig({
       url: `${pocketBaseUrl}/api/health`,
       timeout: 180_000,
       reuseExistingServer: false,
+      env: {
+        ...process.env,
+        POCKETBASE_TEST_HTTP: pocketBaseHttp,
+      },
     },
     {
       command: 'npm run dev -- --host 127.0.0.1 --port 4173',

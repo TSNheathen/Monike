@@ -22,19 +22,6 @@ const posts = Object.freeze([
   }),
 ])
 
-const gallery = Object.freeze(
-  categoryCards.map((card, index) =>
-    Object.freeze({
-      id: card.title,
-      title: card.title,
-      caption: card.description,
-      alt_text: card.description,
-      image: card.image,
-      sort_order: index + 1,
-    }),
-  ),
-)
-
 const siteContent = Object.freeze({
   id: 'dev-site-main',
   key: 'main',
@@ -80,7 +67,6 @@ export const devContentFixtures = Object.freeze({
   enabled: DEV_FIXTURES_ENABLED,
   posts: DEV_FIXTURES_ENABLED ? posts : Object.freeze([]),
   blogLabels: DEV_FIXTURES_ENABLED ? blogLabels : Object.freeze([]),
-  gallery: DEV_FIXTURES_ENABLED ? gallery : Object.freeze([]),
   siteContent: DEV_FIXTURES_ENABLED ? siteContent : null,
   landingCards: DEV_FIXTURES_ENABLED ? landingCards : Object.freeze([]),
   aboutPage: DEV_FIXTURES_ENABLED ? aboutPage : null,

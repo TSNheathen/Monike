@@ -19,9 +19,13 @@ export default function AdminLoginPage() {
       navigate('/admin/blog')
     } catch (error) {
       const normalized = normalizeApiError(error)
-      setMessage(normalized.kind === API_ERROR_KINDS.RATE_LIMITED
-        ? 'Proběhlo příliš mnoho pokusů. Počkej prosím minutu a potom to zkus znovu.'
-        : 'Přihlášení se nezdařilo. Zkontroluj e-mail a heslo.')
+      if (normalized.kind === API_ERROR_KINDS.RATE_LIMITED) {
+        setMessage('Proběhlo příliš mnoho pokusů. Počkej prosím minutu a potom to zkus znovu.')
+      } else if (normalized.kind === API_ERROR_KINDS.UNAVAILABLE) {
+        setMessage(normalized.message)
+      } else {
+        setMessage('Přihlášení se nezdařilo. Zkontroluj e-mail a heslo.')
+      }
       passwordRef.current?.focus()
     }
   }

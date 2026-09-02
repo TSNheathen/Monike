@@ -12,43 +12,43 @@ export function fileUrl(record, field, options) {
   return pb.files.getURL(record, value, options)
 }
 
-async function list(collection, options) {
+async function list(collection, options, failureMessage) {
   try {
     return await pb.collection(collection).getFullList(options)
   } catch (error) {
-    throw normalizeApiError(error, `Kolekci ${collection} se nepodařilo načíst.`)
+    throw normalizeApiError(error, failureMessage || 'Seznam se nepodařilo načíst.')
   }
 }
 
-async function send(path, options) {
+async function send(path, options, failureMessage) {
   try {
     return await pb.send(path, options)
   } catch (error) {
-    throw normalizeApiError(error)
+    throw normalizeApiError(error, failureMessage)
   }
 }
 
-async function createRecord(collection, data) {
+async function createRecord(collection, data, failureMessage) {
   try {
     return await pb.collection(collection).create(data)
   } catch (error) {
-    throw normalizeApiError(error, `Záznam v kolekci ${collection} se nepodařilo vytvořit.`)
+    throw normalizeApiError(error, failureMessage || 'Záznam se nepodařilo vytvořit.')
   }
 }
 
-async function updateRecord(collection, id, data) {
+async function updateRecord(collection, id, data, failureMessage) {
   try {
     return await pb.collection(collection).update(id, data)
   } catch (error) {
-    throw normalizeApiError(error, `Záznam v kolekci ${collection} se nepodařilo upravit.`)
+    throw normalizeApiError(error, failureMessage || 'Změny se nepodařilo uložit.')
   }
 }
 
-async function deleteRecord(collection, id) {
+async function deleteRecord(collection, id, failureMessage) {
   try {
     return await pb.collection(collection).delete(id)
   } catch (error) {
-    throw normalizeApiError(error, `Záznam v kolekci ${collection} se nepodařilo smazat.`)
+    throw normalizeApiError(error, failureMessage || 'Záznam se nepodařilo smazat.')
   }
 }
 
@@ -81,12 +81,12 @@ export const api = {
       sort: '-published_at,-created',
       filter: publishedOnly ? publishedPostsFilter(pb, labelId) : undefined,
       expand: 'labels',
-    })
+    }, 'Články se nepodařilo načíst.')
   },
   async postBySlug(slug) {
     const result = await send(`/api/monike/articles/${encodeURIComponent(slug)}`, {
       method: 'GET',
-    })
+    }, 'Článek se nepodařilo načíst.')
     return result
   },
   async postById(id) {
@@ -109,14 +109,14 @@ export const api = {
     return list('post_slug_aliases', {
       sort: '-created',
       filter: pb.filter('post = {:postId}', { postId }),
-    })
+    }, 'Historii adres článku se nepodařilo načíst.')
   },
   async contentAssets(parentType, parentId) {
     const field = parentType === 'post' ? 'post' : 'about_page'
     const records = await list('content_assets', {
       sort: 'created',
       filter: pb.filter(`${field} = {:parentId}`, { parentId }),
-    })
+    }, 'Obrázky vložené do obsahu se nepodařilo načíst.')
     let token = ''
     if (records.length) {
       try {
@@ -134,7 +134,7 @@ export const api = {
     const records = await list('gallery_images', {
       sort: 'sort_order',
       filter: publishedOnly ? 'published = true' : undefined,
-    })
+    }, 'Galerii se nepodařilo načíst.')
     return records.map((record) => ({
       ...record,
       imageUrl: fileUrl(record, 'image'),
@@ -148,55 +148,55 @@ export const api = {
     }
   },
   async createPost(data) {
-    return send('/api/monike/posts/save', { method: 'POST', body: data })
+    return send('/api/monike/posts/save', { method: 'POST', body: data }, 'Článek se nepodařilo uložit.')
   },
   async updatePost(id, data) {
-    return send('/api/monike/posts/save', { method: 'POST', body: { ...data, id } })
+    return send('/api/monike/posts/save', { method: 'POST', body: { ...data, id } }, 'Článek se nepodařilo uložit.')
   },
   async deletePost(id, expectedUpdated) {
     return send(`/api/monike/posts/${encodeURIComponent(id)}/delete`, {
       method: 'POST',
       body: { expectedUpdated },
-    })
+    }, 'Článek se nepodařilo smazat.')
   },
   async blogLabels() {
-    return list('blog_labels', { sort: 'sort_order,name' })
+    return list('blog_labels', { sort: 'sort_order,name' }, 'Labely se nepodařilo načíst.')
   },
   async createBlogLabel(data) {
-    return createRecord('blog_labels', data)
+    return createRecord('blog_labels', data, 'Label se nepodařilo vytvořit.')
   },
   async updateBlogLabel(id, data) {
-    return updateRecord('blog_labels', id, data)
+    return updateRecord('blog_labels', id, data, 'Label se nepodařilo uložit.')
   },
   async deleteBlogLabel(id) {
     return send(`/api/monike/labels/${encodeURIComponent(id)}/delete`, {
       method: 'POST',
       body: {},
-    })
+    }, 'Label se nepodařilo smazat.')
   },
   async updatePostCover(id, data) {
-    return updateRecord('posts', id, data)
+    return updateRecord('posts', id, data, 'Titulní obrázek se nepodařilo uložit.')
   },
   async createGalleryImage(data) {
-    return createRecord('gallery_images', data)
+    return createRecord('gallery_images', data, 'Obrázek galerie se nepodařilo vytvořit.')
   },
   async updateGalleryImage(id, data) {
-    return updateRecord('gallery_images', id, data)
+    return updateRecord('gallery_images', id, data, 'Obrázek galerie se nepodařilo uložit.')
   },
   async deleteGalleryImage(id) {
-    return deleteRecord('gallery_images', id)
+    return deleteRecord('gallery_images', id, 'Obrázek galerie se nepodařilo smazat.')
   },
   async reorderGallery(ids, expectedUpdated = {}) {
     return send('/api/monike/gallery/reorder', {
       method: 'POST',
       body: { ids, expectedUpdated },
-    })
+    }, 'Pořadí galerie se nepodařilo uložit.')
   },
   async landingCards() {
-    return list('landing_cards', { sort: 'slot', expand: 'label' })
+    return list('landing_cards', { sort: 'slot', expand: 'label' }, 'Karty úvodní stránky se nepodařilo načíst.')
   },
   async updateLandingCard(id, data) {
-    return updateRecord('landing_cards', id, data)
+    return updateRecord('landing_cards', id, data, 'Kartu úvodní stránky se nepodařilo uložit.')
   },
   async siteContent() {
     try {
@@ -212,7 +212,7 @@ export const api = {
     }
   },
   async updateSiteContent(id, data) {
-    return updateRecord('site_content', id, data)
+    return updateRecord('site_content', id, data, 'Texty webu se nepodařilo uložit.')
   },
   async aboutPage() {
     try {
@@ -228,13 +228,13 @@ export const api = {
     }
   },
   async saveAbout(data) {
-    return send('/api/monike/about/save', { method: 'POST', body: data })
+    return send('/api/monike/about/save', { method: 'POST', body: data }, 'Stránku O mně se nepodařilo uložit.')
   },
   async updateAboutPortrait(id, data) {
-    return updateRecord('about_page', id, data)
+    return updateRecord('about_page', id, data, 'Portrét stránky O mně se nepodařilo uložit.')
   },
   async stageContentAsset(data) {
-    const result = await send('/api/monike/content-assets/stage', { method: 'POST', body: data })
+    const result = await send('/api/monike/content-assets/stage', { method: 'POST', body: data }, 'Obrázek se nepodařilo nahrát do obsahu.')
     let token = ''
     try {
       token = await pb.files.getToken()

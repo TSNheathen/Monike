@@ -144,8 +144,6 @@ export default function AdminLabelsPage() {
         setMessage('Přihlášení vypršelo. Po obnovení akci zopakuj.')
       } else if (normalized.kind === API_ERROR_KINDS.CONFLICT) {
         setMessage('Label se stále používá. Nejdřív ho odeber nebo nahraď u článků a landing karet.')
-      } else if (normalized.kind === API_ERROR_KINDS.VALIDATION) {
-        setMessage('Label není platný nebo už jeho slug používá jiný label.')
       } else setMessage(normalized.message)
     } finally {
       setBusyKey('')

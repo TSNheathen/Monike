@@ -7,9 +7,14 @@ export function PublicRequestState({ state, emptyMessage, onRetry, retrying = fa
   if (state === 'invalid') return children
   if (state === 'not-found') return <StatePanel state="not-found">{children}</StatePanel>
   if (state === 'unavailable' || state === 'error' || state === 'configuration') {
+    const explanation = {
+      unavailable: 'Server s obsahem teď neodpovídá. Zkus načtení za chvíli zopakovat.',
+      error: 'Server požadavek nedokončil. Zkus načtení znovu.',
+      configuration: 'Tato část webu nemá kompletní nebo platné nastavení.',
+    }[state]
     return (
       <StatePanel state={state} onRetry={onRetry} retrying={retrying}>
-        <p>Obsah se teď nepodařilo načíst. Zkus to prosím znovu.</p>
+        <p>{explanation}</p>
       </StatePanel>
     )
   }

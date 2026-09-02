@@ -1,14 +1,24 @@
 import { resolveEnvironment, validateDeploymentEnvironment } from './environment-policy.js'
 
 describe('konfigurace prostředí', () => {
-  it('zapne DEV fixtures pouze ve vývojovém prostředí', () => {
+  it('nechá DEV fixtures defaultně vypnuté i ve vývojovém prostředí', () => {
     expect(resolveEnvironment({ mode: 'development' })).toEqual({
       name: 'development',
-      useDevFixtures: true,
+      useDevFixtures: false,
     })
     expect(resolveEnvironment({ mode: 'production' })).toEqual({
       name: 'production',
       useDevFixtures: false,
+    })
+  })
+
+  it('umožní DEV fixtures pouze jako explicitní development opt-in', () => {
+    expect(resolveEnvironment({
+      mode: 'development',
+      devFixtures: 'true',
+    })).toEqual({
+      name: 'development',
+      useDevFixtures: true,
     })
   })
 

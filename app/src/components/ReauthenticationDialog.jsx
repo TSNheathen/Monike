@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { Dialog } from './Dialog.jsx'
 import { StatusMessage } from './AsyncState.jsx'
+import { API_ERROR_KINDS, normalizeApiError } from '../lib/api-errors.js'
 
 export default function ReauthenticationDialog({ open, email = '', authenticate, onSuccess, onCancel }) {
   const passwordRef = useRef(null)
@@ -17,8 +18,11 @@ export default function ReauthenticationDialog({ open, email = '', authenticate,
       await authenticate(email, password)
       setPassword('')
       onSuccess()
-    } catch {
-      setMessage('Přihlášení se nepodařilo. Zkontroluj heslo.')
+    } catch (error) {
+      const normalized = normalizeApiError(error)
+      setMessage(normalized.kind === API_ERROR_KINDS.UNAVAILABLE
+        ? normalized.message
+        : 'Přihlášení se nepodařilo. Zkontroluj heslo.')
       passwordRef.current?.focus()
     } finally {
       setBusy(false)

@@ -169,7 +169,58 @@ test('spravuje labely a bezpečně blokuje smazání použitého labelu', async 
   await expect(page.getByRole('article').filter({ hasText: 'Ze zákulisí' })).toHaveCount(0)
 })
 
-test('spravuje galerii i všechny pevné sekce a admin nemá axe porušení', async ({ page }) => {
+test('uloží delší stránku O mně s odkazem v přesném rich-text formátu', async ({ page }) => {
+  await loginAsTestAdmin(page)
+  await page.goto('/admin/web/o-mne')
+
+  const editor = page.getByRole('textbox', { name: 'Příběh stránky O mně' })
+  await editor.fill(`${'Dlouhý text stránky O mně. '.repeat(400)}Odkaz`)
+  await editor.press('Control+End')
+  await editor.press('Control+Shift+ArrowLeft')
+  await page.getByRole('button', { name: 'Odkaz' }).click()
+  const linkDialog = page.getByRole('dialog', { name: 'Odkaz' })
+  await linkDialog.getByLabel('URL').fill('https://example.com/pribeh')
+  await linkDialog.getByRole('button', { name: 'Použít odkaz' }).click()
+
+  await page.getByRole('button', { name: 'Uložit stránku O mně' }).click()
+  await expect(page.getByText('Stránka O mně je uložená.')).toBeVisible()
+
+  const admin = await authenticateTestAdmin()
+  const about = await admin.collection('about_page').getFirstListItem('key = "main"')
+  const canonicalJson = JSON.stringify(about.content_json)
+  expect(canonicalJson.length).toBeGreaterThan(8_445)
+  expect(canonicalJson).toContain('"href":"https://example.com/pribeh"')
+  expect(canonicalJson).not.toMatch(/"target"|"rel"|"class"/)
+
+  await page.goto('/o-mne')
+  await expect(page.getByRole('link', { name: 'Odkaz' })).toHaveAttribute(
+    'href',
+    'https://example.com/pribeh',
+  )
+
+  await page.goto('/admin/web/o-mne')
+  await editor.fill('Text s úmyslně odmítnutým odkazem.')
+  await page.route('**/api/monike/about/save', (route) => route.fulfill({
+    status: 400,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      status: 400,
+      message: 'Zadaná data nejsou platná.',
+      data: {
+        content_json: {
+          code: 'invalid_link',
+          message: 'Odkaz používá nepovolenou adresu.',
+        },
+      },
+    }),
+  }))
+  await page.getByRole('button', { name: 'Uložit stránku O mně' }).click()
+  await expect(page.getByText('Obsah: Odkaz používá nepovolenou adresu.')).toBeVisible()
+  await expect(page.getByText('Požadavek se nezdařil.')).toHaveCount(0)
+  await page.unroute('**/api/monike/about/save')
+})
+
+test('propíše gallery CRUD, publikaci a pořadí z adminu do veřejné galerie', async ({ page }) => {
   await loginAsTestAdmin(page)
 
   await page.goto('/admin/gallery/new')
@@ -181,12 +232,57 @@ test('spravuje galerii i všechny pevné sekce a admin nemá axe porušení', as
   await page.getByLabel('Zobrazit ve veřejné galerii').check()
   await page.getByRole('button', { name: 'Uložit obrázek' }).click()
   await page.waitForURL(/\/admin\/gallery\/[a-z0-9]{15}\/edit/)
+  const editUrl = page.url()
+
+  await page.goto('/gallery')
+  let publicItem = page.getByRole('link', { name: 'Otevřít obrázek: Nový obraz' })
+  await expect(publicItem).toBeVisible()
+  await expect(publicItem).toHaveAttribute('data-description', 'Popisek nového obrazu.')
+
+  await page.goto(editUrl)
+  await page.getByLabel('Název').fill('Upravený obraz')
+  await page.getByLabel('Popisek').fill('Upravený veřejný popisek.')
+  await page.getByRole('button', { name: 'Uložit obrázek' }).click()
+  await expect(page.getByText('Obrázek je uložený.')).toBeVisible()
+
+  await page.goto('/gallery')
+  await expect(page.getByRole('link', { name: 'Otevřít obrázek: Nový obraz' })).toHaveCount(0)
+  publicItem = page.getByRole('link', { name: 'Otevřít obrázek: Upravený obraz' })
+  await expect(publicItem).toBeVisible()
+  await expect(publicItem).toHaveAttribute('data-description', 'Upravený veřejný popisek.')
+
+  await page.goto(editUrl)
+  await page.getByLabel('Zobrazit ve veřejné galerii').uncheck()
+  await page.getByRole('button', { name: 'Uložit obrázek' }).click()
+  await page.goto('/gallery')
+  await expect(page.getByRole('link', { name: 'Otevřít obrázek: Upravený obraz' })).toHaveCount(0)
+
+  await page.goto(editUrl)
+  await page.getByLabel('Zobrazit ve veřejné galerii').check()
+  await page.getByRole('button', { name: 'Uložit obrázek' }).click()
+  await page.goto('/gallery')
+  await expect(page.getByRole('link', { name: 'Otevřít obrázek: Upravený obraz' })).toBeVisible()
 
   await page.goto('/admin/gallery')
-  const newItem = page.getByRole('article').filter({ hasText: 'Nový obraz' })
-  await newItem.getByRole('button', { name: /Posunout .* nahoru/ }).click()
+  const updatedItem = page.getByRole('article').filter({ hasText: 'Upravený obraz' })
+  await updatedItem.getByRole('button', { name: /Posunout .* nahoru/ }).click()
   await page.getByRole('button', { name: 'Uložit pořadí' }).click()
   await expect(page.getByText('Pořadí galerie je uložené.')).toBeVisible()
+
+  await page.goto('/gallery')
+  await expect(page.locator('.gallery-item').first()).toContainText('Upravený obraz')
+
+  await page.goto(editUrl)
+  await page.getByRole('button', { name: 'Trvale smazat' }).click()
+  const deleteDialog = page.getByRole('dialog', { name: 'Trvale smazat obrázek?' })
+  await deleteDialog.getByRole('button', { name: 'Trvale smazat' }).click()
+  await page.waitForURL('**/admin/gallery')
+  await page.goto('/gallery')
+  await expect(page.getByRole('link', { name: 'Otevřít obrázek: Upravený obraz' })).toHaveCount(0)
+})
+
+test('spravuje všechny pevné sekce a admin nemá axe porušení', async ({ page }) => {
+  await loginAsTestAdmin(page)
 
   await page.goto('/admin/web/landing')
   await page.getByLabel('Podtitulek').fill('Nový podtitulek Moniké')

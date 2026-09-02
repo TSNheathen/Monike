@@ -23,6 +23,7 @@ npm run test:e2e:install
 npm run test:e2e
 ```
 
-Vývojové ukázky jsou povolené jen s `VITE_APP_ENV=development`. Build pro
-`test`, `demo` nebo `production` se zapnutým `VITE_USE_DEV_FIXTURES=true`
-záměrně skončí chybou.
+Vývojové ukázky jsou defaultně vypnuté a lze je zapnout pouze explicitním
+`VITE_USE_DEV_FIXTURES=true` spolu s `VITE_APP_ENV=development`. Build pro
+`test`, `demo` nebo `production` s fixtures záměrně skončí chybou. Veřejná
+galerie fixtures nepoužívá a vždy čte publikované `gallery_images` z PocketBase.

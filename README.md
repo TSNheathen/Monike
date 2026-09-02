@@ -59,6 +59,9 @@ http://127.0.0.1:8090/_/
 ```
 
 Při prvním spuštění se automaticky aplikují migrace z `app/pb_migrations`.
+Běžný development má `VITE_USE_DEV_FIXTURES=false`, takže veřejný web i admin
+čtou a zapisují stejný lokální PocketBase. Fixtures jsou pouze explicitní
+vývojový opt-in a galerie je nepoužívá nikdy.
 
 ## První administrátor webu
 

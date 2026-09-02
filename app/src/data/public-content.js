@@ -75,7 +75,7 @@ export async function loadArticlePage(slug) {
 }
 
 export async function loadGallery() {
-  return DEV_FIXTURES_ENABLED ? devContentFixtures.gallery : api.gallery(true)
+  return api.gallery(true)
 }
 
 export async function loadAboutPage() {

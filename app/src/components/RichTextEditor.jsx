@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
 import { Dialog } from './Dialog.jsx'
 import { createMonikeEditorKeys } from '../extensions/MonikeEditorKeys.js'
 import { createMonikeImageExtension } from '../extensions/MonikeImage.js'
+import { MonikeLink } from '../extensions/MonikeLink.js'
 import {
   EMPTY_RICH_TEXT,
   isAllowedHref,
@@ -74,7 +74,7 @@ export default function RichTextEditor({
         codeBlock: false,
         horizontalRule: false,
       }),
-      Link.configure({
+      MonikeLink.configure({
         openOnClick: false,
         autolink: false,
         linkOnPaste: false,
