@@ -21,11 +21,12 @@ try {
     '-e', 'MONIKE_ALLOWED_ORIGINS=https://demo.monike.test',
     '-e', 'PB_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef',
     '-e', 'MONIKE_SUPERUSER_IPS=127.0.0.1/32',
-    '-e', 'MONIKE_R2_ENDPOINT=https://account.r2.cloudflarestorage.com',
-    '-e', 'MONIKE_R2_BUCKET=monike-demo-backups',
-    '-e', 'MONIKE_R2_REGION=auto',
-    '-e', 'MONIKE_R2_ACCESS_KEY_ID=local-smoke-key',
-    '-e', 'MONIKE_R2_SECRET_ACCESS_KEY=local-smoke-secret',
+    '-e', 'MONIKE_BACKUP_STORAGE=s3',
+    '-e', 'MONIKE_S3_ENDPOINT=https://account.r2.cloudflarestorage.com',
+    '-e', 'MONIKE_S3_BUCKET=monike-demo-backups',
+    '-e', 'MONIKE_S3_REGION=auto',
+    '-e', 'MONIKE_S3_ACCESS_KEY_ID=local-smoke-key',
+    '-e', 'MONIKE_S3_SECRET_ACCESS_KEY=local-smoke-secret',
     imageName,
   ])
 

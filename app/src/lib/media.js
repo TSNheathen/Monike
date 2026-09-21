@@ -1,4 +1,10 @@
 const ROLE_CONFIG = Object.freeze({
+  'landing-background': Object.freeze({
+    candidates: [[800, '800x0'], [1200, '1200x0'], [1600, '1600x0'], [2400, '2400x0']],
+    sizes: '100vw',
+    loading: 'eager',
+    fetchPriority: 'high',
+  }),
   landing: Object.freeze({
     candidates: [[480, '480x0'], [800, '800x0']],
     sizes: '(max-width: 1099px) 210px, 224px',

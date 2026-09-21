@@ -92,6 +92,7 @@
 .editor-content { min-height: 220px; }
 .editor-content .tiptap { min-height: 194px; outline: 0; }
 .editor-content .ProseMirror-selectednode { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+.admin-background-preview { display: block; width: min(100%, 640px); aspect-ratio: 16 / 9; object-fit: cover; }
 
 @media (max-width: 759px) {
   .admin-page { display: block; padding-top: 68px; }

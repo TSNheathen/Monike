@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Menu, X } from 'lucide-react'
-import { landingNavigation } from '../data/landing.js'
-import { loadLandingContent } from '../data/public-content.js'
+import { landingCardTitle } from '../data/landing.js'
+import { loadBlogLabels, loadLandingContent } from '../data/public-content.js'
 import { usePublicResource } from '../hooks/usePublicResource.js'
 import { usePageMetadata } from '../hooks/usePageMetadata.js'
 import { pageMetadata } from '../lib/metadata.js'
@@ -10,6 +10,8 @@ import { pb } from '../lib/pocketbase.js'
 import { responsiveImage } from '../lib/media.js'
 import { StatePanel } from '../components/AsyncState.jsx'
 import ModalDrawer from '../components/ModalDrawer.jsx'
+import PublicNavigation from '../components/PublicNavigation.jsx'
+import LandingBackground from '../components/LandingBackground.jsx'
 import { useRouteFocus } from '../hooks/useRouteFocus.js'
 
 const METADATA = pageMetadata({
@@ -35,21 +37,18 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuTriggerRef = useRef(null)
   const headingRef = useRouteFocus()
-  const request = usePublicResource(loadLandingContent)
+  const request = usePublicResource(loadLandingContent, [], ['blog_labels', 'site_content', 'landing_cards'])
+  const labelsRequest = usePublicResource(loadBlogLabels, [], ['blog_labels'])
+  const navigationProps = { labels: labelsRequest.data || [], state: labelsRequest.state, onRetry: labelsRequest.retry }
   const content = request.state === 'ready' ? request.data : null
-  const navItems = landingNavigation(content?.cards || [])
   usePageMetadata(METADATA)
 
   return (
     <main id="main-content" className="landing-page" tabIndex="-1">
       <a className="skip-link" href="#main-content">Přeskočit na hlavní obsah</a>
       <h1 ref={headingRef} id="hero-title" className="landing-title" tabIndex="-1">Moniké</h1>
-      <picture className="landing-background" aria-hidden="true">
-        <source media="(max-width: 720px)" srcSet="/assets/landing/background-mobile.png" />
-        <img src="/assets/landing/background-desktop.png" alt="" />
-      </picture>
+      <LandingBackground site={content?.site} />
       <div className="landing-overlay" aria-hidden="true" />
-      <div className="bottom-panel" aria-hidden="true" />
 
       <Link className="top-logo" to="/" aria-label="Domů Moniké">
         <img src="/assets/landing/small-logo.svg" alt="" />
@@ -67,9 +66,7 @@ export default function LandingPage() {
         {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
       </button>
 
-      <nav className="side-nav" aria-label="Hlavní navigace">
-        {navItems.map((item) => <Link key={item.label} to={item.href}>{item.label}</Link>)}
-      </nav>
+      <PublicNavigation {...navigationProps} />
 
       {menuOpen && (
         <ModalDrawer
@@ -79,7 +76,7 @@ export default function LandingPage() {
           triggerRef={menuTriggerRef}
           onClose={() => setMenuOpen(false)}
         >
-          <nav className="mobile-menu" aria-label="Hlavní navigace">
+          <div className="mobile-menu">
             <button
               type="button"
               className="icon-button landing-menu-close"
@@ -88,10 +85,8 @@ export default function LandingPage() {
             >
               <X aria-hidden="true" />
             </button>
-            {navItems.map((item) => (
-              <Link key={item.label} to={item.href} onClick={() => setMenuOpen(false)}>{item.label}</Link>
-            ))}
-          </nav>
+            <PublicNavigation {...navigationProps} className="public-drawer__nav" close={() => setMenuOpen(false)} />
+          </div>
         </ModalDrawer>
       )}
 
@@ -123,7 +118,7 @@ export default function LandingPage() {
             {content.cards.map((card) => (
               <Link key={card.slot} className="category-card" to={card.href} data-testid="category-card">
                 <img className="category-card-image" alt="" {...cardImageProps(card)} />
-                <span className="category-card-title">{card.title}</span>
+                <span className="category-card-title">{landingCardTitle(card)}</span>
                 <span className="category-card-description">{card.description}</span>
               </Link>
             ))}

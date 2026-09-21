@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AdminFrame } from '../components/SiteFrame.jsx'
 import { StatePanel, StatusBadge } from '../components/AsyncState.jsx'
 import { labelAccent } from '../components/PublicContent.jsx'
-import { normalizeApiError } from '../lib/api-errors.js'
+import { usePublicResource } from '../hooks/usePublicResource.js'
 import { api } from '../lib/pocketbase.js'
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('cs-CZ', { dateStyle: 'medium' })
@@ -15,22 +14,13 @@ function postStatus(post) {
 }
 
 export default function AdminBlogPage() {
-  const [outcome, setOutcome] = useState({ state: 'loading', posts: [], error: null })
-
-  const load = useCallback(async () => {
-    setOutcome((current) => ({ ...current, state: 'loading', error: null }))
-    try {
-      const posts = await api.posts(false)
-      setOutcome({ state: posts.length ? 'ready' : 'empty', posts, error: null })
-    } catch (error) {
-      const normalized = normalizeApiError(error)
-      setOutcome({ state: normalized.kind, posts: [], error: normalized })
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const request = usePublicResource(() => api.posts(false), [], ['blog_labels'])
+  const outcome = {
+    ...request,
+    state: request.state === 'ready' && !request.data.length ? 'empty' : request.state,
+    posts: request.data || [],
+  }
+  const load = request.retry
 
   return (
     <AdminFrame

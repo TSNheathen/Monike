@@ -111,7 +111,7 @@ onFileDownloadRequest((e) => {
 cronAdd('monikeInactiveAssetsCleanup', '30 3 * * *', () => {
   let result
   try {
-    result = require(`${__hooks}/lib/operations.js`).cleanupInactiveAssets($app)
+    result = require(`${__hooks}/lib/asset-cleanup.js`).cleanupInactiveAssets($app)
     $app.logger().info(
       'monike.cleanup.completed',
       'candidates', result.candidates,
@@ -207,6 +207,20 @@ onRecordUpdateRequest((e) => {
   operations.validateGalleryPublication(e.record)
   return e.next()
 }, 'gallery_images')
+
+onRecordUpdateRequest((e) => {
+  require(`${__hooks}/lib/operations.js`).validateCmsImageRequest(e, {
+    field: 'landing_background',
+    widthField: 'background_width',
+    heightField: 'background_height',
+    maxBytes: 10 * 1024 * 1024,
+  })
+  if (!e.record.getString('landing_background') && e.record.getUnsavedFiles('landing_background').length === 0) {
+    e.record.set('background_width', 0)
+    e.record.set('background_height', 0)
+  }
+  return e.next()
+}, 'site_content')
 
 onRecordUpdateRequest((e) => {
   require(`${__hooks}/lib/operations.js`).validateCmsImageRequest(e, {

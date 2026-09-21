@@ -1,0 +1,26 @@
+FROM node:22.22.0-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY index.html vite.config.js ./
+COPY src/ ./src/
+COPY public/ ./public/
+ARG APP_ENV=production
+ARG MONIKE_SITE_URL
+ARG MONIKE_PUBLIC_POCKETBASE_URL
+ENV VITE_APP_ENV=$APP_ENV \
+    VITE_USE_DEV_FIXTURES=false \
+    VITE_SITE_URL=$MONIKE_SITE_URL \
+    VITE_POCKETBASE_URL=$MONIKE_PUBLIC_POCKETBASE_URL
+RUN npm run build
+
+FROM node:22.22.0-alpine
+WORKDIR /app
+ENV NODE_ENV=production PORT=3000
+COPY --from=build /app/dist ./dist/
+COPY package.json ./
+COPY server/ ./server/
+COPY api/ ./api/
+USER node
+EXPOSE 3000
+CMD ["node", "server/start.js"]

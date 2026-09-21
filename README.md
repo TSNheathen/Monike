@@ -89,3 +89,45 @@ VITE_POCKETBASE_URL=http://127.0.0.1:8090
 ```
 
 Pro jiné prostředí vytvoř `app/.env` podle `app/.env.example`.
+## Produkční release na Roští.cz
+
+Používáme Roští **Stack**: Node HTTP server + PocketBase, společná veřejná
+doména a persistentní data mimo kontejnery. Podporované nasazení už nepoužívá
+Vercel ani Fly. Konfigurace: `app/docker-compose.rosti.yml`,
+`app/rosti.env.example`. Kompletní kroky včetně migrace dat, účtů, záloh a
+proxy bezpečnosti jsou v [deployment runbooku](app/docs/implementation/operations/deployment-runbook.md).
+
+Pro lokální ověření buildu nastav v PowerShellu:
+
+```powershell
+$env:VITE_APP_ENV='test'
+$env:VITE_SITE_URL='http://127.0.0.1:3000'
+$env:VITE_POCKETBASE_URL='http://127.0.0.1:8090'
+$env:VITE_USE_DEV_FIXTURES='false'
+npm run build
+npm start
+```
+
+`npm start` čte serverové hodnoty z `app/.env` podle `.env.example`.
+PocketBase musí běžet v druhém terminálu. Lokální build je na
+http://127.0.0.1:3000; pro release použij produkční HTTPS hodnoty, ne režim test.
+
+## Kontroly
+
+```sh
+npm test
+npm run build
+npm run test:migrations
+npm run test:e2e:install
+npm run test:e2e
+npm run test:image
+```
+
+Build potřebuje environment hodnoty uvedené výše nebo produkční hodnoty
+z runbooku. Testy používají oddělená data v `app/.tmp` a porty 4173/8095.
+`npm test` hlídá i limit 700 řádků vlastních JS/JSX souborů.
+
+V CMS lze měnit pozadí úvodní stránky. Blog v menu rozbaluje aktuální štítky; odkaz
+„Všechny články“ uvnitř skupiny vede na celý blog. Na blogu včetně filtru a detailu
+článku zůstává skupina rozbalená na desktopu i v mobilním menu. Jména, barvy a URL štítků pocházejí
+z PocketBase; otevřené veřejné stránky reagují na jejich změny přes realtime.

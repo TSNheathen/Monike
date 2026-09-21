@@ -37,14 +37,14 @@ const child = spawn(
   pocketBaseArgs({
     dataDir,
     command: 'serve',
-    http: process.env.POCKETBASE_TEST_HTTP || '127.0.0.1:8090',
+    http: process.env.POCKETBASE_TEST_HTTP || '127.0.0.1:8095',
   }),
   {
     stdio: 'inherit',
     env: {
       ...process.env,
       MONIKE_TEST_MODE: 'true',
-      MONIKE_PUBLIC_POCKETBASE_URL: `http://${process.env.POCKETBASE_TEST_HTTP || '127.0.0.1:8090'}`,
+      MONIKE_PUBLIC_POCKETBASE_URL: `http://${process.env.POCKETBASE_TEST_HTTP || '127.0.0.1:8095'}`,
     },
   },
 )

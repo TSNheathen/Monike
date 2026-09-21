@@ -1,5 +1,7 @@
 # Phase 5 — HTTP routing a SEO
 
+> Historický záznam před přechodem na Roští. Aktuální deployment a proxy policy: [runbook](operations/deployment-runbook.md).
+
 Stav: **PASS** (2026-09-01)
 
 ## Implementováno

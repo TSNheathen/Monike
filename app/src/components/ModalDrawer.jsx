@@ -38,7 +38,7 @@ export default function ModalDrawer({ open, id, label, triggerRef, onClose, chil
         return
       }
       if (event.key !== 'Tab' || !drawer) return
-      const controls = [...drawer.querySelectorAll(FOCUSABLE)]
+      const controls = [...drawer.querySelectorAll(FOCUSABLE)].filter((element) => !element.closest('[hidden]'))
       if (!controls.length) {
         event.preventDefault()
         drawer.focus()

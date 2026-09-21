@@ -1,6 +1,4 @@
-import { next } from '@vercel/functions'
-
-const DEPLOYED_ENVIRONMENTS = new Set(['demo', 'production'])
+const DEPLOYED_ENVIRONMENTS = new Set(['demo', 'production', 'test'])
 
 function hstsHeader(environment) {
   const configured = String(environment.MONIKE_HSTS_MAX_AGE || '300').trim()
@@ -24,7 +22,7 @@ export function securityHeaders(environment = process.env) {
   }
   const pocketBase = new URL(pocketBaseValue)
   if (
-    pocketBase.protocol !== 'https:' ||
+    (pocketBase.protocol !== 'https:' && !(name === 'test' && pocketBase.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(pocketBase.hostname))) ||
     pocketBase.username ||
     pocketBase.password ||
     pocketBase.origin !== pocketBaseValue
@@ -62,18 +60,3 @@ export function securityHeaders(environment = process.env) {
   }
 }
 
-export default function proxy() {
-  try {
-    return next({ headers: securityHeaders(process.env) })
-  } catch {
-    return new Response('Služba není správně nastavena.', {
-      status: 503,
-      headers: {
-        'Cache-Control': 'no-store',
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Content-Type-Options': 'nosniff',
-        'X-Robots-Tag': 'noindex,nofollow',
-      },
-    })
-  }
-}

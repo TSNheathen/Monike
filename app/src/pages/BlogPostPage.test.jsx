@@ -4,6 +4,7 @@ import BlogPostPage from './BlogPostPage.jsx'
 
 const content = vi.hoisted(() => ({ loadArticlePage: vi.fn() }))
 vi.mock('../data/public-content.js', () => ({
+  loadBlogLabels: async () => [],
   loadArticlePage: content.loadArticlePage,
   loadLandingContent: async () => ({ cards: [], site: null }),
 }))

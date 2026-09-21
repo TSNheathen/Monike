@@ -27,11 +27,12 @@ test('PocketBase 0.40.1 přijme přesnou runtime policy včetně R2 záloh a log
     MONIKE_PUBLIC_POCKETBASE_URL: 'https://api-demo.monike.test',
     MONIKE_ALLOWED_ORIGINS: 'https://demo.monike.test',
     MONIKE_SUPERUSER_IPS: '127.0.0.1/32',
-    MONIKE_R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
-    MONIKE_R2_BUCKET: 'monike-demo-backups',
-    MONIKE_R2_REGION: 'auto',
-    MONIKE_R2_ACCESS_KEY_ID: 'local-test-key',
-    MONIKE_R2_SECRET_ACCESS_KEY: 'local-test-secret',
+    MONIKE_BACKUP_STORAGE: 's3',
+    MONIKE_S3_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
+    MONIKE_S3_BUCKET: 'monike-demo-backups',
+    MONIKE_S3_REGION: 'auto',
+    MONIKE_S3_ACCESS_KEY_ID: 'local-test-key',
+    MONIKE_S3_SECRET_ACCESS_KEY: 'local-test-secret',
   })
 
   try {
@@ -39,7 +40,7 @@ test('PocketBase 0.40.1 přijme přesnou runtime policy včetně R2 záloh a log
     const saved = await superuser.settings.getAll()
     expect(saved.meta.hideControls).toBe(true)
     expect(saved.superuserIPs).toEqual(['127.0.0.1/32'])
-    expect(saved.trustedProxy.headers).toEqual(['Fly-Client-IP'])
+    expect(saved.trustedProxy.headers).toEqual(['X-Monike-Client-IP'])
     expect(saved.backups).toMatchObject({
       cron: '15 2 * * *',
       cronMaxKeep: 14,

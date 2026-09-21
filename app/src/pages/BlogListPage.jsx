@@ -33,6 +33,7 @@ export default function BlogListPage() {
   const request = usePublicResource(
     () => query.state === 'invalid' ? null : loadBlogListing(query.slug),
     [query.state, query.slug],
+    ['blog_labels'],
   )
   const listing = request.state === 'ready' ? request.data : null
   const labels = Array.isArray(listing?.labels) ? listing.labels : []

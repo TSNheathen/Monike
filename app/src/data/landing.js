@@ -17,20 +17,16 @@ export function landingCardHref(card) {
   return label?.slug ? `/blog?label=${encodeURIComponent(label.slug)}` : '/blog'
 }
 
-export function landingNavigation(cards = []) {
-  const bySlot = new Map(cards.map((card) => [card.slot, card]))
-  const cesty = bySlot.get('cesty')
-  const kocickyAndy = bySlot.get('kocicky-andy')
+export function landingCardTitle(card) {
+  return expandedLabel(card)?.name || card.title
+}
+
+export function landingNavigation(labels = []) {
   return [
     { label: 'DOMŮ', href: '/' },
+    { label: 'Blog', href: '/blog', labels },
     { label: 'GALERIE', href: '/gallery' },
-    ...(cesty?.title?.trim()
-      ? [{ label: cesty.title.trim(), href: landingCardHref(cesty) }]
-      : []),
     { label: 'O MNĚ', href: '/o-mne' },
-    ...(kocickyAndy?.title?.trim()
-      ? [{ label: kocickyAndy.title.trim(), href: landingCardHref(kocickyAndy) }]
-      : []),
     { label: 'KONTAKT', href: '/kontakt' },
   ]
 }

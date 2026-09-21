@@ -33,7 +33,7 @@ export function createBlogRoute({
     let resolverResponse
     try {
       resolverResponse = await fetchImpl(
-        `${configuration.pocketBaseOrigin}/api/monike/articles/${encodeURIComponent(slug)}`,
+        `${configuration.pocketBaseInternalOrigin}/api/monike/articles/${encodeURIComponent(slug)}`,
         { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(timeoutMs) },
       )
     } catch {

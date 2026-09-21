@@ -4,18 +4,23 @@ import { StatePanel, StatusMessage } from '../components/AsyncState.jsx'
 import ReauthenticationDialog from '../components/ReauthenticationDialog.jsx'
 import UnsavedChangesDialog from '../components/UnsavedChangesDialog.jsx'
 import { LANDING_CARD_SLOTS } from '../data/landing.js'
+import { usePublicResource } from '../hooks/usePublicResource.js'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges.js'
 import { isAuthenticationError, normalizeApiError } from '../lib/api-errors.js'
-import { api } from '../lib/pocketbase.js'
+import { api, fileUrl } from '../lib/pocketbase.js'
 import { normalizeAdminImage } from '../lib/image-normalization.js'
 
 export default function AdminLandingPage() {
   const [state, setState] = useState('loading')
   const [site, setSite] = useState(null)
   const [cards, setCards] = useState([])
-  const [labels, setLabels] = useState([])
+  const labelsRequest = usePublicResource(api.blogLabels, [], ['blog_labels'])
+  const labels = labelsRequest.data || []
   const [cardUrls, setCardUrls] = useState({})
   const [cardFiles, setCardFiles] = useState({})
+  const [backgroundFile, setBackgroundFile] = useState(null)
+  const [backgroundPreview, setBackgroundPreview] = useState('')
+  const [removeBackground, setRemoveBackground] = useState(false)
   const [dirtyKeys, setDirtyKeys] = useState(new Set())
   const [busyKey, setBusyKey] = useState('')
   const [message, setMessage] = useState('')
@@ -26,10 +31,9 @@ export default function AdminLandingPage() {
   const load = useCallback(async () => {
     setState('loading')
     try {
-      const [siteRecord, cardRecords, labelRecords] = await Promise.all([
+      const [siteRecord, cardRecords] = await Promise.all([
         api.siteContent(),
         api.landingCards(),
-        api.blogLabels(),
       ])
       const bySlot = new Map(cardRecords.map((card) => [card.slot, card]))
       if (cardRecords.length !== 5 || LANDING_CARD_SLOTS.some(({ slot }) => !bySlot.has(slot))) {
@@ -45,8 +49,9 @@ export default function AdminLandingPage() {
         urls.push(await api.protectedFileUrl(card, 'image', '800x0'))
       }
       setSite(siteRecord)
+      setBackgroundFile(null)
+      setRemoveBackground(false)
       setCards(ordered)
-      setLabels(labelRecords)
       setCardUrls(Object.fromEntries(ordered.map((card, index) => [card.id, urls[index]])))
       setCardFiles({})
       setDirtyKeys(new Set())
@@ -60,6 +65,15 @@ export default function AdminLandingPage() {
   }, [])
 
   useEffect(() => { load() }, [load])
+  useEffect(() => {
+    if (!backgroundFile) {
+      setBackgroundPreview('')
+      return
+    }
+    const url = URL.createObjectURL(backgroundFile)
+    setBackgroundPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [backgroundFile])
 
   function markDirty(key) {
     setDirtyKeys((current) => new Set([...current, key]))
@@ -118,6 +132,40 @@ export default function AdminLandingPage() {
     }, 'Texty úvodní stránky jsou uložené.')
   }
 
+  async function selectBackground(selected) {
+    if (!selected) return
+    setBusyKey('background')
+    setMessage('Připravuji obrázek pozadí…')
+    try {
+      const normalized = await normalizeAdminImage(selected, { maxBytes: 10 * 1024 * 1024 })
+      setBackgroundFile(normalized)
+      setRemoveBackground(false)
+      markDirty('background')
+    } catch (error) {
+      setMessageKind('error')
+      setMessage(error.message)
+    } finally {
+      setBusyKey('')
+    }
+  }
+
+  function saveBackground() {
+    return perform('background', async () => {
+      const data = new FormData()
+      if (backgroundFile) data.set('landing_background', backgroundFile)
+      else if (removeBackground) data.set('landing_background', '')
+      const saved = await api.updateSiteContent(site.id, data)
+      setSite((current) => ({
+        ...current,
+        landing_background: saved.landing_background,
+        background_width: saved.background_width,
+        background_height: saved.background_height,
+      }))
+      setBackgroundFile(null)
+      setRemoveBackground(false)
+    }, 'Pozadí úvodní stránky je uložené.')
+  }
+
   function saveCard(card) {
     return perform(card.id, async () => {
       const data = new FormData()
@@ -160,6 +208,21 @@ export default function AdminLandingPage() {
       {state === 'ready' && (
         <div className="admin-static-stack">
           <StatusMessage kind={messageKind}>{message}</StatusMessage>
+          <section className="panel admin-static-section" aria-labelledby="landing-background-heading">
+            <h2 id="landing-background-heading">Pozadí úvodní stránky</h2>
+            <img className="admin-background-preview" alt="Náhled pozadí úvodní stránky" src={
+              removeBackground ? '/assets/landing/background-desktop.png'
+                : backgroundPreview || fileUrl(site, 'landing_background', { thumb: '800x0' }) || '/assets/landing/background-desktop.png'
+            } />
+            <label>Nahrát pozadí<input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(busyKey)} onChange={(event) => selectBackground(event.target.files?.[0])} /></label>
+            {site.landing_background && (
+              <label className="checkbox-row">
+                <input type="checkbox" checked={removeBackground} disabled={Boolean(busyKey)} onChange={(event) => { setRemoveBackground(event.target.checked); setBackgroundFile(null); markDirty('background') }} />
+                Použít výchozí pozadí
+              </label>
+            )}
+            <button className="button button--primary" type="button" disabled={!dirtyKeys.has('background') || Boolean(busyKey)} onClick={saveBackground}>Uložit pozadí</button>
+          </section>
           <section className="panel admin-static-section">
             <h2>Úvodní texty</h2>
             <div className="admin-form">
@@ -174,12 +237,13 @@ export default function AdminLandingPage() {
           </section>
           <section className="admin-static-cards" aria-labelledby="landing-cards-heading">
             <h2 id="landing-cards-heading">Pevné karty</h2>
+            {labelsRequest.state !== 'ready' && <StatePanel state={labelsRequest.state} onRetry={labelsRequest.retry} />}
             {cards.map((card) => (
               <article className="panel admin-static-section admin-landing-card" key={card.id}>
                 <img src={cardUrls[card.id]} alt="" />
                 <div className="admin-form">
                   <p className="admin-item__slug">Pevný slot: {card.slot}</p>
-                  <label>Název<input required maxLength="100" value={card.title} onChange={(event) => updateCard(card.id, 'title', event.target.value)} /></label>
+                  <label>{card.label ? 'Název bez labelu' : 'Název'}<input required maxLength="100" value={card.title} onChange={(event) => updateCard(card.id, 'title', event.target.value)} /></label>
                   <label>Popis<textarea required maxLength="500" value={card.description} onChange={(event) => updateCard(card.id, 'description', event.target.value)} /></label>
                   {card.slot !== 'gallery' && (
                     <label>

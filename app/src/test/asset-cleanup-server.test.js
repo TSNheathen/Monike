@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
-const { cleanupInactiveAssets } = require('../../pb_hooks/lib/operations.js')
+const { cleanupInactiveAssets } = require('../../pb_hooks/lib/asset-cleanup.js')
 
 function record({ id, active = false, created, post = 'parent-post' }) {
   return {

@@ -41,13 +41,12 @@ describe('konfigurace prostředí', () => {
     ).toThrow('musí být true nebo false')
   })
 
-  it('na Vercelu odmítne chybějící nebo lokální deployment URL', () => {
-    expect(() => validateDeploymentEnvironment({ isVercel: true })).toThrow(
-      'explicitní VITE_APP_ENV',
+  it('pro release odmítne chybějící nebo lokální deployment URL', () => {
+    expect(() => validateDeploymentEnvironment({ appEnvironment: 'production' })).toThrow(
+      'VITE_POCKETBASE_URL',
     )
     expect(() => validateDeploymentEnvironment({
       appEnvironment: 'demo',
-      isVercel: true,
       pocketBaseUrl: 'http://127.0.0.1:8090',
       siteUrl: 'https://demo.monike.example',
     })).toThrow('VITE_POCKETBASE_URL')
@@ -56,7 +55,6 @@ describe('konfigurace prostředí', () => {
   it('přijme přesné HTTPS origins pro explicitní demo build', () => {
     expect(validateDeploymentEnvironment({
       appEnvironment: 'demo',
-      isVercel: true,
       pocketBaseUrl: 'https://api-demo.monike.example',
       siteUrl: 'https://demo.monike.example',
     })).toEqual({

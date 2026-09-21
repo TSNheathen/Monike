@@ -29,10 +29,6 @@ export async function loadLandingContent() {
   }
 }
 
-export async function loadLandingNavigation() {
-  return DEV_FIXTURES_ENABLED ? devContentFixtures.landingCards : api.landingCards()
-}
-
 export async function loadBlogLabels() {
   return DEV_FIXTURES_ENABLED ? devContentFixtures.blogLabels : api.blogLabels()
 }

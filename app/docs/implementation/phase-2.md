@@ -1,5 +1,7 @@
 # Phase 2 — důvěryhodné operace PocketBase
 
+> Historický záznam před přechodem na Roští. Aktuální deployment a proxy policy: [runbook](operations/deployment-runbook.md).
+
 Vícezáznamové změny používají tyto úzké aplikační routy:
 
 ```text

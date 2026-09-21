@@ -31,7 +31,7 @@ export function runtimeEnvironment(environment = process.env) {
     ['webová', siteUrl, site],
   ]) {
     if (
-      parsed.protocol !== 'https:' ||
+      (parsed.protocol !== 'https:' && !(name === 'test' && parsed.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parsed.hostname))) ||
       parsed.username ||
       parsed.password ||
       parsed.origin !== value
@@ -39,9 +39,14 @@ export function runtimeEnvironment(environment = process.env) {
       throw new Error(`${label} URL musí být přesný HTTPS origin.`)
     }
   }
+  const internal = new URL(environment.MONIKE_POCKETBASE_INTERNAL_URL || pocketBase.origin)
+  if (!['http:', 'https:'].includes(internal.protocol) || internal.username || internal.password || internal.origin !== (environment.MONIKE_POCKETBASE_INTERNAL_URL || pocketBase.origin)) {
+    throw new Error('Interní PocketBase URL musí být přesný HTTP nebo HTTPS origin.')
+  }
   return {
     name,
     pocketBaseOrigin: pocketBase.origin,
+    pocketBaseInternalOrigin: internal.origin,
     siteOrigin: site.origin,
     noindex: name !== 'production',
   }

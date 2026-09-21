@@ -21,7 +21,8 @@ describe('PocketBase release artefact', () => {
     expect(ignored).toMatch(/^\*$/m)
     expect(ignored).toContain('!pb_hooks/**')
     expect(ignored).toContain('!pb_migrations/**')
-    expect(ignored.match(/!public\/assets\/landing\/card-[^\n]+\.png/g)).toHaveLength(5)
+    expect(ignored).toContain('!public/**')
+    expect(ignored).toContain('!server/**')
     expect(ignored).not.toContain('!.env')
     expect(ignored).not.toContain('!pb_data')
   })
@@ -46,23 +47,24 @@ describe('PocketBase release artefact', () => {
   })
 })
 
-describe.each([
-  ['demo', 'fly.demo.toml', 'monike_data_demo', '7'],
-  ['production', 'fly.production.toml', 'monike_data_production', '14'],
-])('Fly konfigurace %s', (environment, file, volume, snapshotRetention) => {
-  it('udržuje jeden 1GB stroj ve fra a 5GB Volume bez autostopu', () => {
-    const config = read(file)
-    expect(config).toContain('primary_region = "fra"')
-    expect(config).toContain(`MONIKE_ENV = "${environment}"`)
-    expect(config).toContain(`source = "${volume}"`)
-    expect(config).toContain('destination = "/pb/pb_data"')
-    expect(config).toContain('initial_size = "5gb"')
-    expect(config).toContain(`snapshot_retention = ${snapshotRetention}`)
-    expect(config).toContain('auto_stop_machines = "off"')
-    expect(config).toContain('min_machines_running = 1')
-    expect(config).toContain('size = "shared-cpu-1x"')
-    expect(config).toContain('memory = "1gb"')
-    expect(config).toContain('policy = "always"')
-    expect(config).toContain('path = "/api/health/ready"')
+describe('Rošti Stack', () => {
+  it('publikuje pouze web na portu 80 a udržuje data v bind mountu', () => {
+    const config = read('docker-compose.rosti.yml')
+    expect(config).toContain('80:3000')
+    expect(config.match(/ports:/g)).toHaveLength(1)
+    expect(config).toContain('./data/pocketbase:/pb/pb_data')
+    expect(config).toContain('http://pocketbase:8080')
+    expect(config).toContain('condition: service_healthy')
+    expect(config).toContain('MONIKE_TRUST_PROXY: "true"')
+    expect(config).not.toContain('Fly-Client-IP')
+  })
+
+  it('balí skutečný Node server a build bez development fixtures', () => {
+    const config = read('Dockerfile.web')
+    expect(config).toContain('VITE_USE_DEV_FIXTURES=false')
+    expect(config).toContain('npm run build')
+    expect(config).toContain('server/start.js')
+    expect(config).toContain('USER node')
+    expect(read('docker/pocketbase-entrypoint.sh')).toContain('migrate up')
   })
 })

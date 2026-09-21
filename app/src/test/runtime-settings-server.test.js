@@ -17,11 +17,12 @@ const environment = {
   MONIKE_ENV: 'demo',
   MONIKE_PUBLIC_POCKETBASE_URL: 'https://api-demo.monike.test',
   MONIKE_SUPERUSER_IPS: '192.0.2.24/32',
-  MONIKE_R2_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
-  MONIKE_R2_BUCKET: 'monike-demo-backups',
-  MONIKE_R2_REGION: 'auto',
-  MONIKE_R2_ACCESS_KEY_ID: 'access-key',
-  MONIKE_R2_SECRET_ACCESS_KEY: 'secret-key',
+  MONIKE_BACKUP_STORAGE: 's3',
+  MONIKE_S3_ENDPOINT: 'https://account.r2.cloudflarestorage.com',
+  MONIKE_S3_BUCKET: 'monike-demo-backups',
+  MONIKE_S3_REGION: 'auto',
+  MONIKE_S3_ACCESS_KEY_ID: 'access-key',
+  MONIKE_S3_SECRET_ACCESS_KEY: 'secret-key',
 }
 
 describe('PocketBase bootstrap runtime settings', () => {
@@ -37,7 +38,7 @@ describe('PocketBase bootstrap runtime settings', () => {
     expect(settings).toMatchObject({
       meta: { appURL: 'https://api-demo.monike.test', hideControls: true },
       superuserIPs: ['192.0.2.24/32'],
-      trustedProxy: { headers: ['Fly-Client-IP'], useLeftmostIP: false },
+      trustedProxy: { headers: ['X-Monike-Client-IP'], useLeftmostIP: false },
       backups: {
         cron: '15 2 * * *',
         cronMaxKeep: 14,
@@ -50,7 +51,7 @@ describe('PocketBase bootstrap runtime settings', () => {
   it('selže zavřeně při chybějící kritické hodnotě nebo konfliktu prostředí', () => {
     expect(() => reconcileRuntimeSettings(
       { settings: settingsFixture },
-      (name) => ({ ...environment, MONIKE_R2_SECRET_ACCESS_KEY: '' })[name],
+      (name) => ({ ...environment, MONIKE_S3_SECRET_ACCESS_KEY: '' })[name],
     )).toThrow()
     expect(() => reconcileRuntimeSettings(
       { settings: settingsFixture },

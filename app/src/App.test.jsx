@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import App from './App.jsx'
 
 vi.mock('./data/public-content.js', () => ({
+  loadBlogLabels: async () => [],
   loadLandingContent: async () => ({
     site: {
       hero_subtitle: 'Tvořím. Cestuji. Žiju.',
@@ -56,16 +57,14 @@ describe('Moniké aplikace', () => {
     const navigation = screen.getByRole('navigation', { name: 'Hlavní navigace' })
     expect(within(navigation).getByRole('link', { name: 'DOMŮ' })).toBeInTheDocument()
     expect(within(navigation).getByRole('link', { name: 'GALERIE' })).toBeInTheDocument()
-    expect(
-      within(navigation).getByRole('link', { name: 'CESTY PODLE CMS' }),
-    ).toHaveAttribute('href', '/blog?label=vzpominky')
+    expect(within(navigation).getByRole('button', { name: 'Blog', exact: true })).toHaveAttribute('aria-expanded', 'false')
+    expect(within(navigation).queryByRole('link', { name: 'CESTY PODLE CMS' })).not.toBeInTheDocument()
     expect(within(navigation).getByRole('link', { name: 'O MNĚ' })).toBeInTheDocument()
-    expect(
-      within(navigation).getByRole('link', { name: 'KOČIČKY & ANDY' }),
-    ).toBeInTheDocument()
+    expect(within(navigation).queryByRole('link', { name: 'KOČIČKY & ANDY' })).not.toBeInTheDocument()
     expect(within(navigation).getByRole('link', { name: 'KONTAKT' })).toBeInTheDocument()
 
     expect(screen.getAllByTestId('category-card')).toHaveLength(5)
+    expect(screen.getByRole('main').querySelector('.bottom-panel')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Instagram Moniké/i })).toHaveAttribute('href', 'https://www.instagram.com/')
     expect(screen.getByRole('link', { name: /Facebook Moniké/i })).toHaveAttribute('href', 'https://www.facebook.com/')
   })

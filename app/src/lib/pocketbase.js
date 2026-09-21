@@ -160,7 +160,7 @@ export const api = {
     }, 'Článek se nepodařilo smazat.')
   },
   async blogLabels() {
-    return list('blog_labels', { sort: 'sort_order,name' }, 'Labely se nepodařilo načíst.')
+    return list('blog_labels', { sort: 'sort_order,name', requestKey: null }, 'Štítky se nepodařilo načíst.')
   },
   async createBlogLabel(data) {
     return createRecord('blog_labels', data, 'Label se nepodařilo vytvořit.')

@@ -54,6 +54,7 @@ export async function resetPocketBaseFixture() {
     .collection('site_content')
     .getFirstListItem(client.filter('key = {:key}', { key: 'main' }))
   await client.collection('site_content').update(site.id, {
+    landing_background: '',
     hero_subtitle: 'Tvořím. Cestuji. Žiju.',
     hero_body:
       'Umění je můj jazyk.\nCestování moje inspirace.\nOkamžiky moje vzpomínky.\nTady sdílím vše, co tvoří můj svět.',

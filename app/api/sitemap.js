@@ -29,7 +29,7 @@ export function createSitemapRoute({ fetchImpl = fetch, environment = process.en
           filter: 'published = true && labels:length > 0',
         })
         const response = await fetchImpl(
-          `${configuration.pocketBaseOrigin}/api/collections/posts/records?${query}`,
+          `${configuration.pocketBaseInternalOrigin}/api/collections/posts/records?${query}`,
           { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(timeoutMs) },
         )
         if (!response.ok) throw new Error('PocketBase sitemap query failed.')

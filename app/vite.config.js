@@ -15,8 +15,7 @@ export default defineConfig(({ mode }) => {
     devFixtures: env.VITE_USE_DEV_FIXTURES,
   })
   validateDeploymentEnvironment({
-    appEnvironment: env.VITE_APP_ENV,
-    isVercel: env.VERCEL === '1',
+    appEnvironment: environment.name,
     pocketBaseUrl: env.VITE_POCKETBASE_URL,
     siteUrl: env.VITE_SITE_URL,
   })

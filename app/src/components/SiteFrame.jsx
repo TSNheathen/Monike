@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { ExternalLink, Facebook, Instagram, LogOut, Menu, X } from 'lucide-react'
-import { landingNavigation } from '../data/landing.js'
-import { loadLandingContent } from '../data/public-content.js'
+import { loadBlogLabels, loadLandingContent } from '../data/public-content.js'
 import { usePublicResource } from '../hooks/usePublicResource.js'
 import { api } from '../lib/pocketbase.js'
 import { useRouteFocus } from '../hooks/useRouteFocus.js'
 import ModalDrawer from './ModalDrawer.jsx'
+import PublicNavigation from './PublicNavigation.jsx'
 
 function SkipLink() {
   return <a className="skip-link" href="#main-content">Přeskočit na hlavní obsah</a>
@@ -18,37 +18,13 @@ function useDrawer() {
   return { open, setOpen, triggerRef }
 }
 
-function PublicNavigation({ items, mobile = false, close }) {
-  const location = useLocation()
-  return (
-    <nav className={mobile ? 'public-drawer__nav' : 'side-nav'} aria-label="Hlavní navigace">
-      {items.map((item) => {
-        const [pathname, query = ''] = item.href.split('?')
-        const active = location.pathname === pathname && (!query || location.search === `?${query}`)
-        return (
-          <Link
-            key={item.label}
-            className={active ? 'active' : undefined}
-            aria-current={active ? 'page' : undefined}
-            to={item.href}
-            onClick={close}
-          >
-            {item.label}
-          </Link>
-        )
-      })}
-    </nav>
-  )
-}
-
 export function PublicFrame({ title, children }) {
   const headingRef = useRouteFocus()
   const drawer = useDrawer()
   const navigationRequest = usePublicResource(loadLandingContent)
+  const labelsRequest = usePublicResource(loadBlogLabels, [], ['blog_labels'])
+  const navigationProps = { labels: labelsRequest.data || [], state: labelsRequest.state, onRetry: labelsRequest.retry }
   const sidebarContent = navigationRequest.state === 'ready' ? navigationRequest.data : null
-  const navigationItems = landingNavigation(
-    Array.isArray(sidebarContent?.cards) ? sidebarContent.cards : [],
-  )
   const instagramUrl = sidebarContent?.site?.instagram_url
   const facebookUrl = sidebarContent?.site?.facebook_url
 
@@ -59,8 +35,7 @@ export function PublicFrame({ title, children }) {
         <Link className="top-logo" to="/" aria-label="Domů Moniké">
           <img src="/assets/landing/small-logo.svg" alt="" />
         </Link>
-        <PublicNavigation items={navigationItems} />
-        <div className="bottom-panel" aria-hidden="true" />
+        <PublicNavigation {...navigationProps} />
         {(instagramUrl || facebookUrl) && (
           <div className="social-links" aria-label="Sociální sítě">
             {instagramUrl && (
@@ -109,7 +84,7 @@ export function PublicFrame({ title, children }) {
             >
               <X aria-hidden="true" />
             </button>
-            <PublicNavigation items={navigationItems} mobile close={() => drawer.setOpen(false)} />
+            <PublicNavigation {...navigationProps} className="public-drawer__nav" close={() => drawer.setOpen(false)} />
           </div>
         </ModalDrawer>
       )}

@@ -71,16 +71,16 @@ IFS="$old_ifs"
 require_value PB_ENCRYPTION_KEY
 [ "${#PB_ENCRYPTION_KEY}" -eq 32 ] || fail "PB_ENCRYPTION_KEY musí mít přesně 32 znaků"
 
-for required_name in \
-  MONIKE_R2_ENDPOINT \
-  MONIKE_R2_BUCKET \
-  MONIKE_R2_REGION \
-  MONIKE_R2_ACCESS_KEY_ID \
-  MONIKE_R2_SECRET_ACCESS_KEY
-do
-  require_value "$required_name"
-done
-validate_https_origin "$MONIKE_R2_ENDPOINT"
+case "${MONIKE_BACKUP_STORAGE:-local}" in
+  local) ;;
+  s3)
+    for required_name in MONIKE_S3_ENDPOINT MONIKE_S3_BUCKET MONIKE_S3_REGION MONIKE_S3_ACCESS_KEY_ID MONIKE_S3_SECRET_ACCESS_KEY; do
+      require_value "$required_name"
+    done
+    validate_https_origin "$MONIKE_S3_ENDPOINT"
+    ;;
+  *) fail "MONIKE_BACKUP_STORAGE musí být local nebo s3" ;;
+esac
 
 for optional_heartbeat in \
   "${MONIKE_BACKUP_HEARTBEAT_URL:-}" \
@@ -114,6 +114,13 @@ su-exec 10001:10001 sh -c '
   (umask 077 && : > "$probe") || exit 1
   rm -f "$probe"
 ' || fail "/pb/pb_data není zapisovatelný pro uid 10001"
+
+# Apply forward migrations before accepting traffic, including the first deploy.
+su-exec 10001:10001 /pb/pocketbase migrate up \
+  --dir=/pb/pb_data \
+  --hooksDir=/pb/pb_hooks \
+  --migrationsDir=/pb/pb_migrations \
+  --encryptionEnv=PB_ENCRYPTION_KEY
 
 exec su-exec 10001:10001 /pb/pocketbase serve \
   --http=0.0.0.0:8080 \

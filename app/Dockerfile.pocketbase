@@ -32,7 +32,8 @@ COPY pb_migrations/ /pb/pb_migrations/
 COPY public/assets/landing/card-*.png /pb/public/assets/landing/
 COPY docker/pocketbase-entrypoint.sh /usr/local/bin/pocketbase-entrypoint
 
-RUN chmod -R 0555 /pb/pb_hooks /pb/pb_migrations /pb/public \
+RUN sed -i 's/\r$//' /usr/local/bin/pocketbase-entrypoint \
+    && chmod -R 0555 /pb/pb_hooks /pb/pb_migrations /pb/public \
     && chmod 0555 /pb/pocketbase /usr/local/bin/pocketbase-entrypoint
 
 EXPOSE 8080

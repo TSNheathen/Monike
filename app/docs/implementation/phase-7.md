@@ -1,5 +1,7 @@
 # Phase 7 — reprodukovatelný demo deployment a recovery
 
+> Historický záznam před přechodem na Roští. Aktuální deployment a proxy policy: [runbook](operations/deployment-runbook.md).
+
 Stav: **LOKÁLNÍ ARTEFAKT PASS / EXTERNÍ DEMO GATE ČEKÁ** (2026-09-02)
 
 ## Lokálně implementováno a ověřeno

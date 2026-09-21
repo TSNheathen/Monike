@@ -54,13 +54,22 @@ async function download(url, destination) {
 
 async function extractArchive(archivePath, destination) {
   if (process.platform === 'win32') {
-    await run('powershell', [
-      '-NoProfile',
-      '-Command',
-      'Expand-Archive -LiteralPath $args[0] -DestinationPath $args[1] -Force',
-      archivePath,
-      destination,
-    ])
+    await run(
+      'powershell',
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        "$ErrorActionPreference = 'Stop'; Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($env:MONIKE_POCKETBASE_ARCHIVE, $env:MONIKE_POCKETBASE_DESTINATION)",
+      ],
+      {
+        env: {
+          ...process.env,
+          MONIKE_POCKETBASE_ARCHIVE: archivePath,
+          MONIKE_POCKETBASE_DESTINATION: destination,
+        },
+      },
+    )
     return
   }
 

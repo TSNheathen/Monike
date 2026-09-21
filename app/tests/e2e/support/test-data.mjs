@@ -1,4 +1,4 @@
-const pocketBaseHttp = process.env.MONIKE_E2E_POCKETBASE_HTTP || '127.0.0.1:8090'
+const pocketBaseHttp = process.env.MONIKE_E2E_POCKETBASE_HTTP || '127.0.0.1:8095'
 
 export const TEST_POCKETBASE_URL = `http://${pocketBaseHttp}`
 

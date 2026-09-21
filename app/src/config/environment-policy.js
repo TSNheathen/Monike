@@ -47,15 +47,11 @@ function exactHttpsOrigin(value, name) {
 
 export function validateDeploymentEnvironment({
   appEnvironment,
-  isVercel,
   pocketBaseUrl,
   siteUrl,
 }) {
   const isExplicitDeployment = ['demo', 'production'].includes(appEnvironment)
-  if (!isVercel && !isExplicitDeployment) return null
-  if (!isExplicitDeployment) {
-    throw new Error('Vercel build vyžaduje explicitní VITE_APP_ENV=demo nebo production.')
-  }
+  if (!isExplicitDeployment) return null
   return Object.freeze({
     pocketBaseOrigin: exactHttpsOrigin(pocketBaseUrl, 'VITE_POCKETBASE_URL'),
     siteOrigin: exactHttpsOrigin(siteUrl, 'VITE_SITE_URL'),

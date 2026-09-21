@@ -44,16 +44,19 @@ function parseSuperuserIps(value) {
   return [...new Set(entries)]
 }
 
-function parseR2Config(environment) {
+function parseBackupStorage(environment) {
+  const storage = environment.MONIKE_BACKUP_STORAGE || 'local'
+  if (storage === 'local') return { enabled: false }
+  if (storage !== 's3') throw new Error('MONIKE_BACKUP_STORAGE musí být local nebo s3.')
   return {
     enabled: true,
-    bucket: required(environment.MONIKE_R2_BUCKET, 'MONIKE_R2_BUCKET'),
-    region: required(environment.MONIKE_R2_REGION, 'MONIKE_R2_REGION'),
+    bucket: required(environment.MONIKE_S3_BUCKET, 'MONIKE_S3_BUCKET'),
+    region: required(environment.MONIKE_S3_REGION, 'MONIKE_S3_REGION'),
     endpoint: parseHttpsOrigin(
-      required(environment.MONIKE_R2_ENDPOINT, 'MONIKE_R2_ENDPOINT'),
+      required(environment.MONIKE_S3_ENDPOINT, 'MONIKE_S3_ENDPOINT'),
     ),
-    accessKey: required(environment.MONIKE_R2_ACCESS_KEY_ID, 'MONIKE_R2_ACCESS_KEY_ID'),
-    secret: required(environment.MONIKE_R2_SECRET_ACCESS_KEY, 'MONIKE_R2_SECRET_ACCESS_KEY'),
+    accessKey: required(environment.MONIKE_S3_ACCESS_KEY_ID, 'MONIKE_S3_ACCESS_KEY_ID'),
+    secret: required(environment.MONIKE_S3_SECRET_ACCESS_KEY, 'MONIKE_S3_SECRET_ACCESS_KEY'),
     forcePathStyle: true,
   }
 }
@@ -72,7 +75,7 @@ export function buildRuntimePolicy(environment) {
   )
   const origins = parseOrigins(environment.MONIKE_ALLOWED_ORIGINS)
   const superuserIPs = parseSuperuserIps(environment.MONIKE_SUPERUSER_IPS)
-  const backupStorage = parseR2Config(environment)
+  const backupStorage = parseBackupStorage(environment)
   const backupRetention = appEnvironment === 'demo' ? 14 : 30
 
   return {
@@ -115,7 +118,7 @@ export function buildRuntimePolicy(environment) {
         ],
       },
       trustedProxy: {
-        headers: ['Fly-Client-IP'],
+        headers: ['X-Monike-Client-IP'],
         useLeftmostIP: false,
       },
       batch: {

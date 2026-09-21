@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import BlogListPage from './BlogListPage.jsx'
 
 const content = vi.hoisted(() => ({ loadBlogListing: vi.fn() }))
 vi.mock('../data/public-content.js', () => ({
+  loadBlogLabels: async () => [],
   loadBlogListing: content.loadBlogListing,
   loadLandingContent: async () => ({ cards: [], site: null }),
 }))
@@ -30,7 +31,7 @@ describe('veřejný seznam blogu', () => {
     let resolve
     content.loadBlogListing.mockReturnValue(new Promise((done) => { resolve = done }))
     renderPage()
-    expect(screen.getByRole('status')).toHaveTextContent('Načítám obsah')
+    expect(within(screen.getByRole('main')).getByRole('status')).toHaveTextContent('Načítám obsah')
     expect(screen.queryByText('Zatím tu nejsou')).not.toBeInTheDocument()
     resolve({ kind: 'ready', labels: [], selectedLabel: null, posts: [] })
     expect(await screen.findByText('Zatím tu nejsou žádné publikované články.')).toBeInTheDocument()

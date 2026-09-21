@@ -7,7 +7,8 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { createBlogRoute } from '../../api/blog-route.js'
 import { createRobotsRoute } from '../../api/robots.js'
 import { createSitemapRoute } from '../../api/sitemap.js'
-import proxy, { securityHeaders } from '../../proxy.js'
+import { securityHeaders } from '../../server/security-headers.js'
+import { createAppServer } from '../../server/app.js'
 
 const production = {
   MONIKE_ENV: 'production',
@@ -55,46 +56,13 @@ afterEach(async () => {
   openServers.clear()
 })
 
-async function startVercelLikeServer({ environment = production } = {}) {
-  const blogRoute = createBlogRoute({ fetchImpl: resolverFetch, loadHtml: staticHtml, environment })
-  const sitemapRoute = createSitemapRoute({
+async function startHttpServer({ environment = production } = {}) {
+  const server = createAppServer({
     environment,
-    fetchImpl: async () => Response.json({
-      page: 1,
-      perPage: 500,
-      totalPages: 1,
-      items: [publishedRecord],
-    }),
-  })
-  const robotsRoute = createRobotsRoute({ environment })
-  const server = createServer(async (request, response) => {
-    try {
-      const requestUrl = new URL(request.url, `http://${request.headers.host}`)
-      let result
-      const articleMatch = requestUrl.pathname.match(/^\/blog\/([^/]+)$/)
-      if (articleMatch) {
-        result = await blogRoute(new Request(
-          `${requestUrl.origin}/api/blog-route?slug=${encodeURIComponent(articleMatch[1])}`,
-        ))
-      } else if (requestUrl.pathname === '/sitemap.xml') {
-        result = await sitemapRoute()
-      } else if (requestUrl.pathname === '/robots.txt') {
-        result = robotsRoute()
-      } else if (['/', '/gallery', '/blog', '/o-mne', '/kontakt'].includes(requestUrl.pathname) || requestUrl.pathname.startsWith('/admin/')) {
-        result = new Response(await staticHtml('index.html'), { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
-      } else {
-        result = new Response(await staticHtml('404.html'), {
-          status: 404,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        })
-      }
-      response.statusCode = result.status
-      result.headers.forEach((value, name) => response.setHeader(name, value))
-      response.end(Buffer.from(await result.arrayBuffer()))
-    } catch {
-      response.statusCode = 500
-      response.end('test adapter failure')
-    }
+    loadHtml: staticHtml,
+    fetchImpl: (url) => new URL(url).pathname.includes('/collections/posts/')
+      ? Promise.resolve(Response.json({ page: 1, perPage: 500, totalPages: 1, items: [publishedRecord] }))
+      : resolverFetch(url),
   })
   openServers.add(server)
   server.listen(0, '127.0.0.1')
@@ -102,9 +70,9 @@ async function startVercelLikeServer({ environment = production } = {}) {
   return `http://127.0.0.1:${server.address().port}`
 }
 
-describe('Vercel-like HTTP routing contract', () => {
+describe('Production HTTP routing contract', () => {
   it('serves a canonical article with escaped initial SEO metadata', async () => {
-    const origin = await startVercelLikeServer()
+    const origin = await startHttpServer()
     const response = await fetch(`${origin}/blog/zlaty-pribeh`)
     const html = await response.text()
 
@@ -121,7 +89,7 @@ describe('Vercel-like HTTP routing contract', () => {
   })
 
   it('returns an absolute 308 for aliases and authoritative 404 for missing articles', async () => {
-    const origin = await startVercelLikeServer()
+    const origin = await startHttpServer()
     const alias = await fetch(`${origin}/blog/stary-pribeh`, { redirect: 'manual' })
     const missing = await fetch(`${origin}/blog/chybi`)
 
@@ -134,7 +102,7 @@ describe('Vercel-like HTTP routing contract', () => {
   it.each(['porucha', 'spatna-odpoved', 'bez-spojeni'])(
     'returns a non-cacheable 503 when resolution is not authoritative: %s',
     async (slug) => {
-      const origin = await startVercelLikeServer()
+      const origin = await startHttpServer()
       const response = await fetch(`${origin}/blog/${slug}`)
       expect(response.status).toBe(503)
       expect(response.headers.get('cache-control')).toBe('no-store')
@@ -144,7 +112,7 @@ describe('Vercel-like HTTP routing contract', () => {
   )
 
   it('keeps known SPA paths and gives an unknown path a real HTTP 404', async () => {
-    const origin = await startVercelLikeServer()
+    const origin = await startHttpServer()
     const known = await fetch(`${origin}/o-mne`)
     const unknown = await fetch(`${origin}/opravdu-neznam`)
 
@@ -154,7 +122,7 @@ describe('Vercel-like HTTP routing contract', () => {
   })
 
   it('publishes canonical production URLs in sitemap and environment-specific robots', async () => {
-    const origin = await startVercelLikeServer()
+    const origin = await startHttpServer()
     const sitemap = await fetch(`${origin}/sitemap.xml`)
     const xml = await sitemap.text()
     const robots = await fetch(`${origin}/robots.txt`)
@@ -165,7 +133,7 @@ describe('Vercel-like HTTP routing contract', () => {
     expect(xml).not.toContain('/admin')
     expect(await robots.text()).toContain('Disallow: /admin/')
 
-    const demoOrigin = await startVercelLikeServer({ environment: demo })
+    const demoOrigin = await startHttpServer({ environment: demo })
     const demoRobots = await fetch(`${demoOrigin}/robots.txt`)
     const demoArticle = await fetch(`${demoOrigin}/blog/zlaty-pribeh`)
     const demoSitemap = await fetch(`${demoOrigin}/sitemap.xml`)
@@ -177,41 +145,9 @@ describe('Vercel-like HTTP routing contract', () => {
   })
 })
 
-describe('Vercel configuration', () => {
-  it('routes only explicit SPA families and runs article resolution first in fra1', async () => {
-    const config = JSON.parse(await readFile(path.resolve(process.cwd(), 'vercel.json'), 'utf8'))
-    const sources = config.rewrites.map((rewrite) => rewrite.source)
-
-    expect(config.functions['api/blog-route.js'].regions).toEqual(['fra1'])
-    expect(config.functions['api/blog-route.js'].includeFiles).toBe(
-      '{dist/index.html,public/404.html,public/503.html}',
-    )
-    expect(config.rewrites[0]).toEqual({
-      source: '/blog/:slug',
-      destination: '/api/blog-route?slug=:slug',
-    })
-    expect(sources).not.toContain('/(.*)')
-    expect(sources).not.toContain('/:path*')
-    expect(sources).toEqual(expect.arrayContaining([
-      '/', '/gallery', '/blog', '/o-mne', '/kontakt', '/admin/:path*',
-    ]))
-  })
-
+describe('HTTP security configuration', () => {
   it('adds a global noindex response header outside production', () => {
-    const previousMonikeEnvironment = process.env.MONIKE_ENV
-    const previousPocketBase = process.env.MONIKE_POCKETBASE_URL
-    process.env.MONIKE_ENV = 'demo'
-    process.env.MONIKE_POCKETBASE_URL = 'https://api-demo.monike.example'
-    try {
-      const response = proxy()
-      expect(response.headers.get('x-middleware-next')).toBe('1')
-      expect(response.headers.get('x-robots-tag')).toBe('noindex,nofollow')
-    } finally {
-      if (previousMonikeEnvironment === undefined) delete process.env.MONIKE_ENV
-      else process.env.MONIKE_ENV = previousMonikeEnvironment
-      if (previousPocketBase === undefined) delete process.env.MONIKE_POCKETBASE_URL
-      else process.env.MONIKE_POCKETBASE_URL = previousPocketBase
-    }
+    expect(securityHeaders(demo)['X-Robots-Tag']).toBe('noindex,nofollow')
   })
 
   it('emits the strict script, framing and browser policy headers with only the configured API origin', () => {

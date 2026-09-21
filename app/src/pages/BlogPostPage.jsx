@@ -29,7 +29,7 @@ function articleCover(post) {
 export default function BlogPostPage() {
   const { slug } = useParams()
   const navigate = useNavigate()
-  const request = usePublicResource(() => loadArticlePage(slug), [slug])
+  const request = usePublicResource(() => loadArticlePage(slug), [slug], ['blog_labels'])
   const result = request.state === 'ready' ? request.data?.result : null
   const labels = request.state === 'ready' ? request.data?.labels || [] : []
   const post = result?.kind === 'canonical' ? result.record : null

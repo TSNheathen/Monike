@@ -50,7 +50,7 @@ function reconcileRuntimeSettings(app, getenv) {
     },
     { label: '/api/', audience: '@guest', duration: 60, maxRequests: 300 },
   ]
-  settings.trustedProxy.headers = ['Fly-Client-IP']
+  settings.trustedProxy.headers = ['X-Monike-Client-IP']
   settings.trustedProxy.useLeftmostIP = false
   settings.batch.enabled = false
   settings.batch.maxRequests = 50
@@ -58,13 +58,17 @@ function reconcileRuntimeSettings(app, getenv) {
   settings.batch.maxBodySize = 0
   settings.backups.cron = '15 2 * * *'
   settings.backups.cronMaxKeep = environment === 'demo' ? 14 : 30
-  settings.backups.s3.enabled = true
-  settings.backups.s3.endpoint = required(read, 'MONIKE_R2_ENDPOINT')
-  settings.backups.s3.bucket = required(read, 'MONIKE_R2_BUCKET')
-  settings.backups.s3.region = required(read, 'MONIKE_R2_REGION')
-  settings.backups.s3.accessKey = required(read, 'MONIKE_R2_ACCESS_KEY_ID')
-  settings.backups.s3.secret = required(read, 'MONIKE_R2_SECRET_ACCESS_KEY')
-  settings.backups.s3.forcePathStyle = true
+  const backupStorage = read('MONIKE_BACKUP_STORAGE') || 'local'
+  if (!['local', 's3'].includes(backupStorage)) throw new Error('MONIKE_BACKUP_STORAGE musí být local nebo s3.')
+  settings.backups.s3.enabled = backupStorage === 's3'
+  if (backupStorage === 's3') {
+    settings.backups.s3.endpoint = required(read, 'MONIKE_S3_ENDPOINT')
+    settings.backups.s3.bucket = required(read, 'MONIKE_S3_BUCKET')
+    settings.backups.s3.region = required(read, 'MONIKE_S3_REGION')
+    settings.backups.s3.accessKey = required(read, 'MONIKE_S3_ACCESS_KEY_ID')
+    settings.backups.s3.secret = required(read, 'MONIKE_S3_SECRET_ACCESS_KEY')
+    settings.backups.s3.forcePathStyle = true
+  }
   settings.logs.maxDataSize = 16384
   settings.logs.maxDays = 14
   settings.logs.minLevel = 0

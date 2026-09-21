@@ -7,6 +7,7 @@ import { StatePanel, StatusBadge, StatusMessage } from '../components/AsyncState
 import ReauthenticationDialog from '../components/ReauthenticationDialog.jsx'
 import UnsavedChangesDialog from '../components/UnsavedChangesDialog.jsx'
 import { labelAccent } from '../components/PublicContent.jsx'
+import { usePublicResource } from '../hooks/usePublicResource.js'
 import { useUnsavedChanges } from '../hooks/useUnsavedChanges.js'
 import { API_ERROR_KINDS, isAuthenticationError, normalizeApiError } from '../lib/api-errors.js'
 import { EMPTY_RICH_TEXT } from '../lib/rich-text-client.js'
@@ -57,7 +58,8 @@ export default function AdminBlogEditorPage() {
   const [loadState, setLoadState] = useState('loading')
   const [record, setRecord] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
-  const [availableLabels, setAvailableLabels] = useState([])
+  const labelsRequest = usePublicResource(api.blogLabels, [], ['blog_labels'])
+  const availableLabels = labelsRequest.data || []
   const [aliases, setAliases] = useState([])
   const [assetUrls, setAssetUrls] = useState({})
   const [coverUrl, setCoverUrl] = useState('')
@@ -85,15 +87,13 @@ export default function AdminBlogEditorPage() {
     setMessage('')
     try {
       if (!id) {
-        setAvailableLabels(await api.blogLabels())
         setLoadState('ready')
         return
       }
-      const [post, postAliases, assets, labels] = await Promise.all([
+      const [post, postAliases, assets] = await Promise.all([
         api.postById(id),
         api.postAliases(id),
         api.contentAssets('post', id),
-        api.blogLabels(),
       ])
       const content = parseContent(post.content_json)
       if (!content) {
@@ -113,7 +113,6 @@ export default function AdminBlogEditorPage() {
         labels: Array.isArray(post.labels) ? post.labels : [],
         content_json: content,
       })
-      setAvailableLabels(labels)
       setAliases(postAliases)
       setAssetUrls(nextUrls)
       setCoverUrl(nextCoverUrl)
@@ -370,7 +369,8 @@ export default function AdminBlogEditorPage() {
               <span>{label.name}</span>
             </label>
           ))}
-          {availableLabels.length === 0 && <p>Nejdřív vytvoř label v sekci Labels.</p>}
+          {labelsRequest.state !== 'ready' && <StatePanel state={labelsRequest.state} onRetry={labelsRequest.retry} />}
+          {labelsRequest.state === 'ready' && availableLabels.length === 0 && <p>Nejdřív vytvoř label v sekci Labels.</p>}
         </fieldset>
         {validationErrors.labels && <p id={labelsErrorId} className="field-error">{validationErrors.labels}</p>}
         <fieldset className="admin-fieldset">

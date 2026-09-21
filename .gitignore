@@ -11,3 +11,4 @@ app/tools/pocketbase/
 .tmp/
 playwright-report/
 test-results/
+app/data/

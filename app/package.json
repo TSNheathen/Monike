@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "start": "node --env-file-if-exists=.env server/start.js",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -23,7 +24,6 @@
     "@tiptap/extension-link": "^2.27.2",
     "@tiptap/react": "^2.14.0",
     "@tiptap/starter-kit": "^2.14.0",
-    "@vercel/functions": "^3.9.5",
     "glightbox": "^3.3.1",
     "lucide-react": "^0.468.0",
     "pocketbase": "^0.25.0",

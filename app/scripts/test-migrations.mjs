@@ -10,6 +10,7 @@ import {
 } from './lib/pocketbase.mjs'
 
 const initialMigration = '20260610142000_initial_monike_collections.js'
+const backgroundMigration = '20260920120000_landing_background.js'
 const editableLabelsMigration = '20260902100000_editable_blog_labels.js'
 const sourceMigrations = path.join(appRoot, 'pb_migrations')
 const hooksDirectory = path.join(appRoot, 'pb_hooks')
@@ -150,6 +151,8 @@ async function assertFinalSchema(url) {
   assert.equal(aliases.createRule, null)
   assert.equal(aliases.updateRule, null)
   assert.equal(aliases.deleteRule, null)
+  assert.equal(site.fields.find((field) => field.name === 'landing_background').protected, true)
+  assert.match(site.updateRule, /background_width:isset = false/)
   assert.equal(site.createRule, null)
   assert.equal(site.deleteRule, null)
   assert.equal(cards.createRule, null)
@@ -247,7 +250,7 @@ async function testFixedCategoryUpgrade() {
   const dataDir = path.join(root, 'data')
   const migrationsDir = path.join(root, 'migrations')
   await rm(root, { recursive: true, force: true })
-  await copyMigrations(migrationsDir, (name) => name !== editableLabelsMigration)
+  await copyMigrations(migrationsDir, (name) => name < editableLabelsMigration)
   await migrate(dataDir, migrationsDir)
   await upsertSuperuser(dataDir, migrationsDir)
 
@@ -266,7 +269,7 @@ async function testFixedCategoryUpgrade() {
     postId = post.id
   })
 
-  await copyMigrations(migrationsDir, (name) => name === editableLabelsMigration)
+  await copyMigrations(migrationsDir, (name) => name >= editableLabelsMigration)
   await migrate(dataDir, migrationsDir)
   await withServer({ dataDir, migrationsDir, port: 8094 }, async (url) => {
     await assertFinalSchema(url)
@@ -281,8 +284,36 @@ async function testFixedCategoryUpgrade() {
   console.log('PASS category upgrade: původní memberships jsou převedené na relations')
 }
 
+async function testCurrentReleaseUpgrade() {
+  const root = path.join(testRoot, 'background-upgrade')
+  const dataDir = path.join(root, 'data')
+  const migrationsDir = path.join(root, 'migrations')
+  await copyMigrations(migrationsDir, (name) => name < backgroundMigration)
+  await migrate(dataDir, migrationsDir)
+  await upsertSuperuser(dataDir, migrationsDir)
+  let before
+  await withServer({ dataDir, migrationsDir, port: 8094 }, async (url) => {
+    const client = await superuserClient(url)
+    const site = await client.collection('site_content').getFirstListItem('key = "main"')
+    before = await client.collection('site_content').update(site.id, { hero_body: 'Vlastní zachovaný obsah.' })
+  })
+  await copyMigrations(migrationsDir, (name) => name >= backgroundMigration)
+  await migrate(dataDir, migrationsDir)
+  await withServer({ dataDir, migrationsDir, port: 8094 }, async (url) => {
+    await assertFinalSchema(url)
+    const client = await superuserClient(url)
+    const after = await client.collection('site_content').getOne(before.id)
+    assert.equal(after.hero_body, before.hero_body)
+    assert.equal(after.landing_background, '')
+    assert.equal(after.background_width, 0)
+    assert.equal(after.background_height, 0)
+  })
+  console.log('PASS release upgrade: původní obsah zachován, pozadí volitelné')
+}
+
 await rm(testRoot, { recursive: true, force: true })
 await mkdir(testRoot, { recursive: true })
 await testFreshMigration()
 await testPrototypeUpgrade()
 await testFixedCategoryUpgrade()
+await testCurrentReleaseUpgrade()
